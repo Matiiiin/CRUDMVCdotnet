@@ -182,34 +182,34 @@ namespace Services
         {
             List<PersonResponse> matchingPersons;
             var allPersons = GetAllPersons();
-            if (string.IsNullOrEmpty(searchBy))
+            if (string.IsNullOrEmpty(searchBy) || string.IsNullOrEmpty(searchString))
             {
                 return allPersons;
             }
 
             switch (searchBy)
             {
-                case nameof(Person.PersonName):
+                case nameof(PersonResponse.PersonName):
                     matchingPersons = allPersons.Where(p=> p.PersonName != null && p.PersonName.Contains(searchString , StringComparison.OrdinalIgnoreCase)).ToList();
                     break;
 
-                case nameof(Person.DateOfBirth):
+                case nameof(PersonResponse.DateOfBirth):
                     matchingPersons = allPersons.Where(p => p.DateOfBirth != null && p.DateOfBirth.Value.ToString("dd/MM/yyyy").Contains(searchString)).ToList();
                     break;
                 
-                case nameof(Person.Gender):
-                    matchingPersons = allPersons.Where(p => p.Gender != null && p.Gender.Contains(searchString)).ToList();
+                case nameof(PersonResponse.Gender):
+                    matchingPersons = allPersons.Where(p => p.Gender != null && p.Gender.Equals(searchString , StringComparison.OrdinalIgnoreCase)).ToList();
                     break;
                 
-                case nameof(Person.CountryID):
-                    matchingPersons = allPersons.Where(p=> p.CountryID != null && p.Country.Contains(searchString)).ToList();
+                case nameof(PersonResponse.Country):
+                    matchingPersons = allPersons.Where(p=> p.Country != null && p.Country.Contains(searchString , StringComparison.OrdinalIgnoreCase)).ToList();
                     break;
                 
-                case nameof(Person.Email):
+                case nameof(PersonResponse.Email):
                     matchingPersons = allPersons.Where(p => p.Email != null && p.Email.Contains(searchString , StringComparison.OrdinalIgnoreCase)).ToList();
                     break;
                 
-                case nameof(Person.Address):
+                case nameof(PersonResponse.Address):
                     matchingPersons = allPersons.Where(p => p.Address != null && p.Address.Contains(searchString , StringComparison.OrdinalIgnoreCase)).ToList();
                     break;
                 default:
