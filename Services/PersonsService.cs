@@ -16,6 +16,126 @@ namespace Services
         private readonly List<Person> _persons = new List<Person>();
         private readonly ICountriesService _countriesService = new CountriesService();
 
+        public PersonsService(bool initialize = true)
+        {
+            if (initialize)
+            {
+                _persons.AddRange(new List<Person>()
+                {
+                    new()
+                    {
+                        PersonID = Guid.Parse("0c97d5dd-5984-436a-a1f2-2fe1f3857a59"),
+                        PersonName = "Michael Johnson",
+                        Email = "michael.johnson@example.com",
+                        DateOfBirth = new DateTime(1985, 3, 12),
+                        Gender = "Male",
+                        CountryID = _countriesService.GetAllCountries()[0].CountryID,
+                        Address = "123 Maple Street, New York, NY",
+                        RecievesNewsLetters = true
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("be245ea5-9e28-4cb4-97c0-290bc619b082"),
+                        PersonName = "Emily Davis",
+                        Email = "emily.davis@example.com",
+                        DateOfBirth = new DateTime(1992, 7, 25),
+                        Gender = "Female",
+                        CountryID = _countriesService.GetAllCountries()[4].CountryID,
+                        Address = "456 Oak Avenue, Los Angeles, CA",
+                        RecievesNewsLetters = false
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("e4ae92cb-76ef-4180-af85-e3117a7bf45a"),
+                        PersonName = "James Smith",
+                        Email = "james.smith@example.com",
+                        DateOfBirth = new DateTime(1978, 11, 5),
+                        Gender = "Male",
+                        CountryID = _countriesService.GetAllCountries()[5].CountryID,
+                        Address = "789 Pine Road, Chicago, IL",
+                        RecievesNewsLetters = true
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("c7972b4b-c1cb-465e-948b-8c50969d56e8"),
+                        PersonName = "Sophia Brown",
+                        Email = "sophia.brown@example.com",
+                        DateOfBirth = new DateTime(2000, 4, 18),
+                        Gender = "Female",
+                        CountryID = _countriesService.GetAllCountries()[1].CountryID,
+                        Address = "321 Cedar Lane, Houston, TX",
+                        RecievesNewsLetters = false
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("32cc403b-38a6-41ce-87c4-415aacab9b9d"),
+                        PersonName = "William Garcia",
+                        Email = "william.garcia@example.com",
+                        DateOfBirth = new DateTime(1995, 9, 30),
+                        Gender = "Male",
+                        CountryID = _countriesService.GetAllCountries()[2].CountryID,
+                        Address = "654 Birch Street, Phoenix, AZ",
+                        RecievesNewsLetters = true
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("2c503e0b-5ae8-4248-a020-30bed949e283"),
+                        PersonName = "Olivia Martinez",
+                        Email = "olivia.martinez@example.com",
+                        DateOfBirth = new DateTime(1988, 6, 22),
+                        Gender = "Female",
+                        CountryID = _countriesService.GetAllCountries()[1].CountryID,
+                        Address = "987 Spruce Drive, Philadelphia, PA",
+                        RecievesNewsLetters = true
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("5eda0c41-f885-4ec2-8a1c-68bf060cb9a2"),
+                        PersonName = "Benjamin Wilson",
+                        Email = "benjamin.wilson@example.com",
+                        DateOfBirth = new DateTime(1990, 1, 15),
+                        Gender = "Male",
+                        CountryID = _countriesService.GetAllCountries()[2].CountryID,
+                        Address = "159 Elm Court, San Antonio, TX",
+                        RecievesNewsLetters = false
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("878e4edf-f877-4db5-86fa-ef37dfbe1a2f"),
+                        PersonName = "Isabella Anderson",
+                        Email = "isabella.anderson@example.com",
+                        DateOfBirth = new DateTime(1998, 12, 10),
+                        Gender = "Female",
+                        CountryID = _countriesService.GetAllCountries()[3].CountryID,
+                        Address = "753 Willow Way, San Diego, CA",
+                        RecievesNewsLetters = true
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("d2f86a9c-8681-4f76-89ab-aa18ea43bbc3"),
+                        PersonName = "Alexander Thomas",
+                        Email = "alexander.thomas@example.com",
+                        DateOfBirth = new DateTime(1983, 5, 8),
+                        Gender = "Male",
+                        CountryID = _countriesService.GetAllCountries()[4].CountryID,
+                        Address = "852 Aspen Circle, Dallas, TX",
+                        RecievesNewsLetters = false
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("574ae25f-2d09-4d57-8c76-56913731e0a1"),
+                        PersonName = "Mia Taylor",
+                        Email = "mia.taylor@example.com",
+                        DateOfBirth = new DateTime(1993, 10, 20),
+                        Gender = "Female",
+                        CountryID = _countriesService.GetAllCountries()[6].CountryID,
+                        Address = "951 Redwood Boulevard, San Jose, CA",
+                        RecievesNewsLetters = true
+                    }
+                });
+                
+            }
+        }
         private PersonResponse ConvertPersonToPersonResponse(Person person)
         {
             var personResponse = person.ToPersonResponse();
