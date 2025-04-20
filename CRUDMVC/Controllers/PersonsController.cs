@@ -1,16 +1,40 @@
 ﻿using Entities;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
 
 namespace CRUDMVC.Controllers;
 
-public class PersonsController(IPersonsService personsService)  : Controller
+[Route("[controller]")]
+public class PersonsController(IPersonsService personsService , ICountriesService countriesService)  : Controller
 {
     private readonly IPersonsService _personsService = personsService;
+    private readonly ICountriesService _countriesService = countriesService;
 
-    [Route("persons/index")]
+    // [Route("[action]")]
+    // [HttpPost]
+    // [RequestSizeLimit(2_000_000_000)]
+    // // [DisableRequestSizeLimit] // Alternatively use [RequestSizeLimit(100_000_000)]
+    // [RequestFormLimits(MultipartBodyLengthLimit = 2_000_000_000)]
+    // public async Task<IActionResult> Download(IFormFile file)
+    // {
+    //     // using (var stream = new FileStream($"./{file.FileName}" , FileMode.Create))
+    //     // {
+    //     //     file.CopyTo(stream);
+    //     // }
+    //     // using (MemoryStream stream = new MemoryStream())
+    //     // {
+    //     //     await Request.Body.CopyToAsync(stream);
+    //     //     //the “stream” streams the file that is uploaded from the client
+    //     //     return Json(stream);
+    //     //
+    //     // }
+    // }
+
+    [Route("[action]")]
     [Route("/")]
     public IActionResult Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
     {
@@ -35,5 +59,29 @@ public class PersonsController(IPersonsService personsService)  : Controller
         var sortedPersons = _personsService.GetSortedPersons(filteredPersons , sortBy ,sortOrder);
         
         return View(sortedPersons);
+    }
+    
+    [Route("[action]")]
+    [HttpGet]
+    public IActionResult Create()
+    {
+        ViewBag.Countries = _countriesService.GetAllCountries();
+        return View();
+    }    
+    
+    
+    [Route("[action]")]
+    [HttpPost]
+    public IActionResult Store([FromForm] PersonAddRequest personAddRequest)
+    {
+        ViewBag.Countries = _countriesService.GetAllCountries();
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return View("Create");
+        }
+
+        _personsService.AddPerson(personAddRequest);
+        return RedirectToAction("Index" , "Persons");
     }
 }
