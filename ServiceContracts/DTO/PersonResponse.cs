@@ -18,7 +18,7 @@ namespace ServiceContracts.DTO
         public Guid? CountryID { get; set; }
         public string? Country { get; set; }
         public string? Address { get; set; }
-        public bool? RecievesNewsLetters { get; set; }
+        public bool RecievesNewsLetters { get; set; }
         public int? Age { get; set; }
 
         public override bool Equals(object? obj)

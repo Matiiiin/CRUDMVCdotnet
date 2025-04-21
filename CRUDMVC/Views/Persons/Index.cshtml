@@ -79,7 +79,9 @@
                     { "ColumnName", nameof(PersonResponse.RecievesNewsLetters) },
                     { "DisplayName", "Receive News Letters" },
                 })
-
+                <th>
+                    Options
+                </th>
             </tr>
             </thead>
             <tbody>
@@ -94,6 +96,9 @@
                     <td style="width:10%">@person.Country</td>
                     <td style="width:15%">@person.Address</td>
                     <td style="width:20%">@person.RecievesNewsLetters</td>
+                    <td style="width:20%">
+                        <a asp-controller="Persons" , asp-action="Edit" asp-route-personID="@person.PersonID">Edit</a>
+                    </td>
                 </tr>
             }
             <tr></tr>

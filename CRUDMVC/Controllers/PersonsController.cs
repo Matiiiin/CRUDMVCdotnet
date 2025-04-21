@@ -15,6 +15,8 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     private readonly IPersonsService _personsService = personsService;
     private readonly ICountriesService _countriesService = countriesService;
 
+    #region FileUpload test Action
+
     // [Route("[action]")]
     // [HttpPost]
     // [RequestSizeLimit(2_000_000_000)]
@@ -34,6 +36,8 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     //     //
     //     // }
     // }
+
+    #endregion
 
     [Route("[action]")]
     [Route("/")]
@@ -87,5 +91,44 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
 
         _personsService.AddPerson(personAddRequest);
         return RedirectToAction("Index" , "Persons");
+    }
+
+    [Route("[action]/{personID:guid}")]
+    [HttpGet]
+    public IActionResult Edit([FromRoute] Guid personID)
+    {
+        var personResponse = _personsService.GetPersonByPersonID(personID);
+        if (personResponse == null)
+        {
+            return NotFound();
+        }
+        ViewBag.Countries = _countriesService.GetAllCountries()
+            .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
+        return View(personResponse.ToPersonUpdateRequest());
+    }
+
+    [Route("[action]")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Update([FromForm] PersonUpdateRequest? personUpdateRequest)
+    {
+        if (personUpdateRequest == null) return BadRequest("Please provide a valid person data");
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Countries = _countriesService.GetAllCountries()
+                .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
+            ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return View("Edit" , _personsService.GetPersonByPersonID(personUpdateRequest.PersonID)!.ToPersonUpdateRequest()); 
+        }
+        // personUpdateRequest.PersonID = personID;
+        _personsService.UpdatePerson(personUpdateRequest);
+        return RedirectToAction("Index" , "Persons");
+    }
+
+    [Route("[action]")]
+    [HttpPost]
+    public IActionResult Delete([FromForm] Guid personID)
+    {
+        return View();
     }
 }
