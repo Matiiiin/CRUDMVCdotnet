@@ -107,10 +107,10 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
         return View(personResponse.ToPersonUpdateRequest());
     }
 
-    [Route("[action]")]
+    [Route("[action]/{personID:guid}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Update([FromForm] PersonUpdateRequest? personUpdateRequest)
+    public IActionResult Update([FromForm] PersonUpdateRequest? personUpdateRequest , Guid personID)
     {
         if (personUpdateRequest == null) return BadRequest("Please provide a valid person data");
         if (!ModelState.IsValid)
@@ -140,6 +140,8 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     public IActionResult SubmitDelete([FromForm] Guid personID)
     {
         if (personID == Guid.Empty) return BadRequest("Please provide a valid person data");
+        if (_personsService.GetPersonByPersonID(personID) == null) return NotFound("Person not found");
+        
         _personsService.DeletePerson(personID);
         return RedirectToAction("Index");
     }

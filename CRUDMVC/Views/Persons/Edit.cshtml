@@ -7,7 +7,7 @@
 <h2>Edit Person</h2>
 
 <div class="center-box">
-    <form asp-controller="Persons" asp-action="Update"  method="POST">
+    <form asp-controller="Persons" asp-action="Update" asp-route-personID="@Model.PersonID" method="POST">
         @Html.AntiForgeryToken()
 
         <input type="hidden" asp-for="PersonID" />
