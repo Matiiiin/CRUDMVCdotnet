@@ -126,9 +126,21 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     }
 
     [Route("[action]")]
-    [HttpPost]
-    public IActionResult Delete([FromForm] Guid personID)
+    [HttpGet]
+    public IActionResult Delete([FromQuery] Guid personID)
     {
-        return View();
+        if (personID == Guid.Empty) return BadRequest("Please provide a valid person data");
+        var personResponse = _personsService.GetPersonByPersonID(personID);
+        return View(personResponse);
+    }
+    
+    [Route("[action]")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult SubmitDelete([FromForm] Guid personID)
+    {
+        if (personID == Guid.Empty) return BadRequest("Please provide a valid person data");
+        _personsService.DeletePerson(personID);
+        return RedirectToAction("Index");
     }
 }
