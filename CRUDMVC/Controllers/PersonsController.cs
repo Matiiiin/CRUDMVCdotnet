@@ -1,6 +1,7 @@
 ﻿using Entities;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using ServiceContracts;
 using ServiceContracts.DTO;
@@ -65,7 +66,8 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [HttpGet]
     public IActionResult Create()
     {
-        ViewBag.Countries = _countriesService.GetAllCountries();
+        ViewBag.Countries = _countriesService.GetAllCountries()
+            .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
         return View();
     }    
     
@@ -74,9 +76,11 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [HttpPost]
     public IActionResult Store([FromForm] PersonAddRequest personAddRequest)
     {
-        ViewBag.Countries = _countriesService.GetAllCountries();
+
         if (!ModelState.IsValid)
         {
+            ViewBag.Countries = _countriesService.GetAllCountries()
+                .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
             ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
             return View("Create");
         }

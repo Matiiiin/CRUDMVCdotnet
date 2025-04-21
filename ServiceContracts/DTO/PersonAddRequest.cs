@@ -18,6 +18,7 @@ namespace ServiceContracts.DTO
         [Required(ErrorMessage ="Email cannot be null")]
         [Display(Name ="Email")]
         [EmailAddress(ErrorMessage = "Please write {0} in a proper format")]
+        [DataType(DataType.EmailAddress)]
         public string? Email { get; set; }
 
         [Required(ErrorMessage = "Please provide a {0}")]
@@ -47,7 +48,7 @@ namespace ServiceContracts.DTO
 
         [Required(ErrorMessage ="Please provide a {0}")]
         [Display(Name = "Recieves News Letters")]
-        public bool? RecievesNewsLetters { get; set; }
+        public bool RecievesNewsLetters { get; set; }
 
 
         public Person ToPerson()
