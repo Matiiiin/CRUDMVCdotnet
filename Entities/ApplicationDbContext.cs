@@ -8,8 +8,9 @@ public class ApplicationDbContext : DbContext
     {
         
     }
-    DbSet<Person> Persons { get; set; }
-    DbSet<Country> Countries { get; set; }
+
+    public DbSet<Person> Persons { get; set; }
+    public DbSet<Country> Countries { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
