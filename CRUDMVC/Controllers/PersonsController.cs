@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ServiceContracts;
 using ServiceContracts.DTO;
@@ -10,10 +11,11 @@ using ServiceContracts.Enums;
 namespace CRUDMVC.Controllers;
 
 [Route("[controller]")]
-public class PersonsController(IPersonsService personsService , ICountriesService countriesService)  : Controller
+public class PersonsController(IPersonsService personsService , ICountriesService countriesService , ApplicationDbContext db)  : Controller
 {
     private readonly IPersonsService _personsService = personsService;
     private readonly ICountriesService _countriesService = countriesService;
+    private readonly ApplicationDbContext _db = db;
 
     #region FileUpload test Action
 
@@ -39,6 +41,13 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
 
     #endregion
 
+    [Route("[action]")]
+    public IActionResult test()
+    {
+       var query =  _db.Persons.FromSqlRaw("exec getallpersonss");
+        return Json(query.ToList());
+    }  
+    
     [Route("[action]")]
     [Route("/")]
     public IActionResult Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)

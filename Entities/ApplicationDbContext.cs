@@ -149,3 +149,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Country>().HasData(countries);
     }
 }
+
+public static class ApplicationDbContextExtentions
+{
+    public static List<Person> sp_GetAllPersons(this ApplicationDbContext context)
+    {
+        return context.Persons.FromSqlRaw("EXEC [dbo].[GetAllPersons]").ToList();
+    }
+}
