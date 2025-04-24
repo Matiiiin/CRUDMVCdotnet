@@ -80,6 +80,7 @@ namespace ServiceContracts.DTO
                 CountryID = person.CountryID,
                 Address = person.Address,
                 RecievesNewsLetters = person.RecievesNewsLetters,
+                Country = person.Country?.CountryName,
                 Age = (person.DateOfBirth != null) ? (int)Math.Round((DateTime.Now - person.DateOfBirth.Value).TotalDays / 365.25) : null
 
             };

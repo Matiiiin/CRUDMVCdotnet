@@ -149,6 +149,15 @@ public class ApplicationDbContext : DbContext
         
         modelBuilder.Entity<Person>().HasData(persons);
         modelBuilder.Entity<Country>().HasData(countries);
+        
+        //Fluent API
+        modelBuilder.Entity<Person>().Property(p => p.DateOfBirth).HasComment("Comment of dateofbirth");
+        
+        //Table Relations
+        // modelBuilder.Entity<Person>(p =>
+        // {
+        //     p.HasOne<Country>(p => p.Country).WithMany(c=>c.Persons).HasForeignKey(p => p.CountryID);
+        // });
     }
 }
 
