@@ -170,6 +170,22 @@ public static class ApplicationDbContextExtentions
         };
         return context.Database.ExecuteSqlRaw("EXEC [dbo].[AddPerson] @PersonID  , @PersonName ,@Email , @DateOfBirth,@Gender,@Address,@CountryID,@RecievesNewsLetters " , parameters);
     }
+    public static int sp_UpdatePerson(this ApplicationDbContext context, Person person)
+    {
+        
+        var parameters = new SqlParameter[]
+        {
+            new ("@PersonID", person.PersonID),
+            new ("@PersonName", person.PersonName),
+            new ("@Email", person.Email),
+            new ("@DateOfBirth", person.DateOfBirth),
+            new ("@Gender", person.Gender),
+            new ("@Address", person.Address),
+            new ("@CountryID", person.CountryID),
+            new ("@RecievesNewsLetters", person.RecievesNewsLetters),
+        };
+        return context.Database.ExecuteSqlRaw("EXEC [dbo].[UpdatePerson] @PersonID  , @PersonName ,@Email , @DateOfBirth,@Gender,@Address,@CountryID,@RecievesNewsLetters " , parameters);
+    }
 }
 
 public static class PersonsDbSetExtentions

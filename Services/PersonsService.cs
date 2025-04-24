@@ -177,18 +177,13 @@ namespace Services
             }
             ModelValidation.Validate(personUpdateRequest);
             
-            var person = _db.Persons.FirstOrDefault(p=>p.PersonID == personUpdateRequest.PersonID);
+            var person = _db.Persons.sp_GetPersonByID(personUpdateRequest.PersonID);
             if (person == null)
             {
                 throw new ArgumentException("Given person does not exist");
             }
-            person.PersonName = personUpdateRequest.PersonName;
-            person.DateOfBirth = personUpdateRequest.DateOfBirth;
-            person.Gender = personUpdateRequest.Gender.ToString();
-            person.CountryID = personUpdateRequest.CountryID;
-            person.Email = personUpdateRequest.Email;
-            person.Address = personUpdateRequest.Address;
-            person.RecievesNewsLetters = personUpdateRequest.RecievesNewsLetters;
+
+            _db.sp_UpdatePerson(personUpdateRequest.ToPerson());
             _db.SaveChanges();            
             return ConvertPersonToPersonResponse(person);
         }
