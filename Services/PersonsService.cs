@@ -48,7 +48,7 @@ namespace Services
 
         public List<PersonResponse> GetAllPersons()
         {
-            return _db.sp_GetAllPersons().Select(p => ConvertPersonToPersonResponse(p)).ToList();
+            return _db.Persons.sp_GetAllPersons().Select(p => ConvertPersonToPersonResponse(p)).ToList();
         }
 
         public PersonResponse? GetPersonByPersonID(Guid? personID)
@@ -57,7 +57,7 @@ namespace Services
             {
                 throw new ArgumentNullException(nameof(personID));
             }
-            var person = _db.Persons.Where(p => p.PersonID == personID)?.FirstOrDefault();
+            var person = _db.Persons.sp_GetPersonByID(personID);
             if (person == null)
             {
                 return null;

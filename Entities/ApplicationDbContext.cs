@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entities;
 
@@ -150,10 +151,19 @@ public class ApplicationDbContext : DbContext
     }
 }
 
-public static class ApplicationDbContextExtentions
+public static class PersonsDbSetExtentions
 {
-    public static List<Person> sp_GetAllPersons(this ApplicationDbContext context)
+    public static List<Person> sp_GetAllPersons(this DbSet<Person> persons)
     {
-        return context.Persons.FromSqlRaw("EXEC [dbo].[GetAllPersons]").ToList();
+        return persons.FromSqlRaw("EXEC [dbo].[GetAllPersons]").ToList();
+    }
+
+    public static Person sp_GetPersonByID(this DbSet<Person> persons, Guid? personID)
+    {
+        var parameters = new SqlParameter[]
+        {
+            new ("@PersonID", personID)
+        };
+        return persons.FromSqlRaw("EXEC [dbo].[GetPersonByID] @PersonID " , parameters).AsEnumerable().FirstOrDefault();
     }
 }
