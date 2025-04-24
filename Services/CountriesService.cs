@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Microsoft.EntityFrameworkCore;
 using ServiceContracts;
 using ServiceContracts.DTO;
 namespace Services
@@ -11,7 +12,7 @@ namespace Services
         {
             _db = db;
         }
-        public CountryResponse AddCountry(CountryAddRequest? countryAddRequest)
+        public async Task<CountryResponse> AddCountry(CountryAddRequest? countryAddRequest)
         {
             if (countryAddRequest == null)
             {
@@ -21,28 +22,28 @@ namespace Services
             {
                 throw new ArgumentException(nameof(countryAddRequest.CountryName));
             }
-            if (_db.Countries.Where(c => c.CountryName == countryAddRequest.CountryName).Any())
+            if (await _db.Countries.Where(c => c.CountryName == countryAddRequest.CountryName).AnyAsync())
             {
                 throw new ArgumentException("There is already a Country with this name");
             }
             var country = countryAddRequest.ToCountry();
-            _db.Countries.Add(country);
+            await _db.Countries.AddAsync(country);
 
             return country.ToCountryResponse();
         }
 
-        public List<CountryResponse> GetAllCountries()
+        public async Task<List<CountryResponse>> GetAllCountries()
         {
-            return _db.Countries.Select(c => c.ToCountryResponse()).ToList();
+            return await _db.Countries.Select(c => c.ToCountryResponse()).ToListAsync();
         }
 
-        public CountryResponse? GetCountryByCountryID(Guid? countryID)
+        public async Task<CountryResponse?> GetCountryByCountryID(Guid? countryID)
         {
             if (countryID == null)
             {
                 return null;
             }
-            return _db.Countries.Where(c => c.CountryID == countryID).Select(c=>c.ToCountryResponse()).FirstOrDefault();
+            return await _db.Countries.Where(c => c.CountryID == countryID).Select(c=>c.ToCountryResponse()).FirstOrDefaultAsync();
         }
 
 

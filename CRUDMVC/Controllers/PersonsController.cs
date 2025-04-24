@@ -50,7 +50,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     
     [Route("[action]")]
     [Route("/")]
-    public IActionResult Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
+    public async Task<IActionResult> Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
     {
         //Search
         ViewBag.SearchFields = new Dictionary<string, string>()
@@ -62,7 +62,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
             {nameof(PersonResponse.Country) , "Country"},
             {nameof(PersonResponse.Address) , "Address"},
         };
-        var filteredPersons = _personsService.GetFilteredPersons(searchBy,searchString);
+        var filteredPersons =await _personsService.GetFilteredPersons(searchBy,searchString);
         ViewBag.CurrentSearchString = searchString;
         ViewBag.CurrentSearchBy = searchBy;
         
@@ -70,16 +70,17 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
         //Sorting
         ViewBag.CurrentSortBy = sortBy;
         ViewBag.CurrentSortOrder = sortOrder;
-        var sortedPersons = _personsService.GetSortedPersons(filteredPersons , sortBy ,sortOrder);
+        var sortedPersons =await _personsService.GetSortedPersons(filteredPersons , sortBy ,sortOrder);
         
         return View(sortedPersons);
     }
     
     [Route("[action]")]
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        ViewBag.Countries = _countriesService.GetAllCountries()
+        var allCountries = await _countriesService.GetAllCountries();
+        ViewBag.Countries =allCountries
             .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
         return View();
     }    
@@ -87,31 +88,33 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     
     [Route("[action]")]
     [HttpPost]
-    public IActionResult Store([FromForm] PersonAddRequest personAddRequest)
+    public async Task<IActionResult> Store([FromForm] PersonAddRequest personAddRequest)
     {
 
         if (!ModelState.IsValid)
         {
-            ViewBag.Countries = _countriesService.GetAllCountries()
+            var allCountries = await _countriesService.GetAllCountries();
+            ViewBag.Countries =allCountries
                 .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
             ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
             return View("Create");
         }
 
-        _personsService.AddPerson(personAddRequest);
+        await _personsService.AddPerson(personAddRequest);
         return RedirectToAction("Index" , "Persons");
     }
 
     [Route("[action]/{personID:guid}")]
     [HttpGet]
-    public IActionResult Edit([FromRoute] Guid personID)
+    public async Task<IActionResult> Edit([FromRoute] Guid personID)
     {
-        var personResponse = _personsService.GetPersonByPersonID(personID);
+        var personResponse = await _personsService.GetPersonByPersonID(personID);
         if (personResponse == null)
         {
             return NotFound();
         }
-        ViewBag.Countries = _countriesService.GetAllCountries()
+        var allCountries = await _countriesService.GetAllCountries();
+        ViewBag.Countries = allCountries
             .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
         return View(personResponse.ToPersonUpdateRequest());
     }
@@ -119,39 +122,41 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [Route("[action]/{personID:guid}")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Update([FromForm] PersonUpdateRequest? personUpdateRequest , Guid personID)
+    public async Task<IActionResult> Update([FromForm] PersonUpdateRequest? personUpdateRequest , Guid personID)
     {
         if (personUpdateRequest == null) return BadRequest("Please provide a valid person data");
         if (!ModelState.IsValid)
         {
-            ViewBag.Countries = _countriesService.GetAllCountries()
+            var allCountries = await _countriesService.GetAllCountries();
+            ViewBag.Countries = allCountries
                 .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
             ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-            return View("Edit" , _personsService.GetPersonByPersonID(personUpdateRequest.PersonID)!.ToPersonUpdateRequest()); 
+            var personResponse = await _personsService.GetPersonByPersonID(personUpdateRequest.PersonID);
+            return View("Edit" , personResponse!.ToPersonUpdateRequest()); 
         }
         // personUpdateRequest.PersonID = personID;
-        _personsService.UpdatePerson(personUpdateRequest);
+        await _personsService.UpdatePerson(personUpdateRequest);
         return RedirectToAction("Index" , "Persons");
     }
 
     [Route("[action]")]
     [HttpGet]
-    public IActionResult Delete([FromQuery] Guid personID)
+    public async Task<IActionResult> Delete([FromQuery] Guid personID)
     {
         if (personID == Guid.Empty) return BadRequest("Please provide a valid person data");
-        var personResponse = _personsService.GetPersonByPersonID(personID);
+        var personResponse = await _personsService.GetPersonByPersonID(personID);
         return View(personResponse);
     }
     
     [Route("[action]")]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult SubmitDelete([FromForm] Guid personID)
+    public async Task<IActionResult> SubmitDelete([FromForm] Guid personID)
     {
         if (personID == Guid.Empty) return BadRequest("Please provide a valid person data");
-        if (_personsService.GetPersonByPersonID(personID) == null) return NotFound("Person not found");
+        if (await _personsService.GetPersonByPersonID(personID) == null) return NotFound("Person not found");
         
-        _personsService.DeletePerson(personID);
+        await _personsService.DeletePerson(personID);
         return RedirectToAction("Index");
     }
 }
