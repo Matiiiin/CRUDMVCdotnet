@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Entities;
 
@@ -151,6 +152,26 @@ public class ApplicationDbContext : DbContext
     }
 }
 
+public static class ApplicationDbContextExtentions
+{
+    public static int sp_AddPerson(this ApplicationDbContext context, Person person)
+    {
+        
+        var parameters = new SqlParameter[]
+        {
+            new ("@PersonID", person.PersonID),
+            new ("@PersonName", person.PersonName),
+            new ("@Email", person.Email),
+            new ("@DateOfBirth", person.DateOfBirth),
+            new ("@Gender", person.Gender),
+            new ("@Address", person.Address),
+            new ("@CountryID", person.CountryID),
+            new ("@RecievesNewsLetters", person.RecievesNewsLetters),
+        };
+        return context.Database.ExecuteSqlRaw("EXEC [dbo].[AddPerson] @PersonID  , @PersonName ,@Email , @DateOfBirth,@Gender,@Address,@CountryID,@RecievesNewsLetters " , parameters);
+    }
+}
+
 public static class PersonsDbSetExtentions
 {
     public static List<Person> sp_GetAllPersons(this DbSet<Person> persons)
@@ -165,5 +186,6 @@ public static class PersonsDbSetExtentions
             new ("@PersonID", personID)
         };
         return persons.FromSqlRaw("EXEC [dbo].[GetPersonByID] @PersonID " , parameters).AsEnumerable().FirstOrDefault();
-    }
+    } 
 }
+

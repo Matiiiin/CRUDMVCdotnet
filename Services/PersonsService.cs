@@ -41,7 +41,7 @@ namespace Services
             ModelValidation.Validate(personAddRequest);
 
             var createdPerson = personAddRequest.ToPerson();
-            _db.Persons.Add(createdPerson);
+            _db.sp_AddPerson(createdPerson);
             _db.SaveChanges();
             return ConvertPersonToPersonResponse(createdPerson);
         }
