@@ -12,6 +12,7 @@ using EntityFrameworkCoreMock;
 using Microsoft.EntityFrameworkCore;
 using ServiceContracts;
 using Moq;
+using FluentAssertions;
 
 namespace CRUDTests.CountryTests
 {
@@ -75,6 +76,7 @@ namespace CRUDTests.CountryTests
                         await _countriesService.AddCountry(request);
                     }
                 });
+            
         }
         [Fact]
         public async Task AddCountry_ProperCountryAddRequest()
