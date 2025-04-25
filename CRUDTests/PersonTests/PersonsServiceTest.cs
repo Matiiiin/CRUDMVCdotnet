@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using AutoFixture;
 using EntityFrameworkCoreMock;
 using Microsoft.EntityFrameworkCore;
 using ServiceContracts;
@@ -22,6 +23,7 @@ namespace CRUDTests.PersonTests
         private readonly IPersonsService _personsService;
         private readonly ICountriesService _countriesService;
         private readonly ITestOutputHelper _testOutputHelper ;
+        private readonly IFixture _fixture;
 
         public PersonsServiceTest(ITestOutputHelper testOutputHelper)
         {
@@ -32,6 +34,7 @@ namespace CRUDTests.PersonTests
             var dbContext = dbContextMock.Object;
             _countriesService = new CountriesService(dbContext);
             _personsService = new PersonsService(dbContext , countriesService: _countriesService);
+            _fixture = new Fixture();
 
         }
         #region AddPerson
@@ -53,10 +56,9 @@ namespace CRUDTests.PersonTests
         public async Task AddPerson_NullPersonNameAddRequest()
         {
             //Arrange
-            PersonAddRequest? personAddRequest = new PersonAddRequest()
-            {
-                PersonName = null
-            };
+            PersonAddRequest? personAddRequest = _fixture.Build<PersonAddRequest>().Without(p=>p.PersonName).Create();
+            // PersonAddRequest? personAddRequest = _fixture.Build<PersonAddRequest>().With<string?>(p => p.PersonName, (string?)null).Create();
+            
             //Assert
             await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
@@ -69,16 +71,7 @@ namespace CRUDTests.PersonTests
         public async Task AddPerson_ProperPersonAddRequest()
         {
             //Arrange
-            PersonAddRequest? personAddRequest = new PersonAddRequest()
-            {
-                PersonName = "Jamie",
-                Address = "Casterly Rock",
-                CountryID = Guid.NewGuid(),
-                DateOfBirth = DateTime.Now,
-                Email = "Jamie@Ravens.com",
-                Gender = PersonGenderEnum.Male,
-                RecievesNewsLetters = true
-            };
+            PersonAddRequest? personAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").Create();
             //Act
             var personResponse =await _personsService.AddPerson(personAddRequest);
             var persons =await _personsService.GetAllPersons();
@@ -104,16 +97,7 @@ namespace CRUDTests.PersonTests
         public async Task GetPersonByPersonID_ProperPersonID()
         {
             //Arrange
-            var addPersonRequest = new PersonAddRequest()
-            {
-                 Address = "Casterly Rock",
-                 CountryID = Guid.NewGuid(),
-                 DateOfBirth = DateTime.Now,
-                 Gender = PersonGenderEnum.Other,
-                 PersonName = "Jamie Lannister",
-                 Email = "jj@ll.com",
-                 RecievesNewsLetters = true
-            };
+            var addPersonRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").Create();
             var createdPersonResponse = await _personsService.AddPerson(addPersonRequest);
             //Act
             var personRetrievedFromGetPersonByPersonId = await _personsService.GetPersonByPersonID(createdPersonResponse.PersonID);
@@ -150,28 +134,7 @@ namespace CRUDTests.PersonTests
         public async Task GetAllPersons_AddFewPersons()
         {
             //Arrange
-            var personsAddRequest = new List<PersonAddRequest>() {
-                { new ()
-            {
-                PersonName = "Jamie",
-                Address = "Casterly Rock",
-                CountryID = Guid.NewGuid(),
-                DateOfBirth = DateTime.Now,
-                Email = "Jamie@Ravens.com",
-                Gender = PersonGenderEnum.Male,
-                RecievesNewsLetters = true
-            } },{
-            new ()
-            {
-                PersonName = "John",
-                Address = "Castle Black",
-                CountryID = Guid.NewGuid(),
-                DateOfBirth = DateTime.Now,
-                Email = "John@Wild.com",
-                Gender = PersonGenderEnum.Male,
-                RecievesNewsLetters = true
-            }
-            } };
+            var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").CreateMany(2);
 
             //Act
             foreach (var personAddRequest in personsAddRequest)
@@ -194,28 +157,8 @@ namespace CRUDTests.PersonTests
         public async Task GetFilteredPersons_EmptySearchString()
         {
             //Arrange
-            var personsAddRequest = new List<PersonAddRequest>() {
-            { new ()
-            {
-                PersonName = "Jamie",
-                Address = "Casterly Rock",
-                CountryID = Guid.NewGuid(),
-                DateOfBirth = DateTime.Now,
-                Email = "Jamie@Ravens.com",
-                Gender = PersonGenderEnum.Male,
-                RecievesNewsLetters = true
-            } },{
-                new ()
-                {
-                    PersonName = "John",
-                    Address = "Castle Black",
-                    CountryID = Guid.NewGuid(),
-                    DateOfBirth = DateTime.Now,
-                    Email = "John@Wild.com",
-                    Gender = PersonGenderEnum.Male,
-                    RecievesNewsLetters = true
-                }
-            } };
+            var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").CreateMany(2);
+
             //Act
             foreach (var personAddRequest in personsAddRequest)
             {
@@ -234,28 +177,8 @@ namespace CRUDTests.PersonTests
         public async Task GetFilteredPersons_ProperSearchString()
         {
             //Arrange
-            var personsAddRequest = new List<PersonAddRequest>() {
-            {
-                new (){
-                    PersonName = "Jamie",
-                    Address = "Casterly Rock",
-                    CountryID = Guid.NewGuid(),
-                    DateOfBirth = DateTime.Now,
-                    Email = "Jamie@Ravens.com",
-                    Gender = PersonGenderEnum.Male,
-                    RecievesNewsLetters = true
-            }}
-            ,{
-                new (){
-                    PersonName = "Jahn",
-                    Address = "Castle Black",
-                    CountryID = Guid.NewGuid(),
-                    DateOfBirth = DateTime.Now,
-                    Email = "John@Wild.com",
-                    Gender = PersonGenderEnum.Male,
-                    RecievesNewsLetters = true
-                }}
-            };
+            var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").With(p=>p.PersonName , "jahn").CreateMany(2);
+
             //Act
             foreach (var personAddRequest in personsAddRequest)
             {
@@ -276,28 +199,8 @@ namespace CRUDTests.PersonTests
          public async Task GetSortedPersons_PersonNameInDescendingOrder()
          {
              //Arrange
-             var personsAddRequest = new List<PersonAddRequest>() {
-             { new ()
-             {
-                 PersonName = "Jamie",
-                 Address = "Casterly Rock",
-                 CountryID = Guid.NewGuid(),
-                 DateOfBirth = DateTime.Now,
-                 Email = "Jamie@Ravens.com",
-                 Gender = PersonGenderEnum.Male,
-                 RecievesNewsLetters = true
-             } },{
-                 new ()
-                 {
-                     PersonName = "John",
-                     Address = "Castle Black",
-                     CountryID = Guid.NewGuid(),
-                     DateOfBirth = DateTime.Now,
-                     Email = "John@Wild.com",
-                     Gender = PersonGenderEnum.Male,
-                     RecievesNewsLetters = true
-                 }
-             } };
+             var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").CreateMany(2);
+
              // var personsFromAdd = new List<PersonResponse>();
              foreach (var addRequest in personsAddRequest)
              {
@@ -325,28 +228,10 @@ namespace CRUDTests.PersonTests
         public async Task UpdatePerson_ProperPerson()
         {
             //Arrange
-            var personAddRequest = new PersonAddRequest()
-            {
-                PersonName = "Jamie",
-                Address = "Casterly Rock",
-                CountryID = Guid.NewGuid(),
-                DateOfBirth = DateTime.Now,
-                Email = "Jamie@Ravens.com",
-                Gender = PersonGenderEnum.Male,
-                RecievesNewsLetters = true
-            };
+            var personAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").Create();
+
             var person = await _personsService.AddPerson(personAddRequest);
-            var personUpdateRequest = new PersonUpdateRequest()
-            {
-                PersonID = person.PersonID,
-                PersonName = person.PersonName,
-                Email = "Jamie@Ravens.com",
-                DateOfBirth = person.DateOfBirth,
-                Address = "Changed Address",
-                Gender = Enum.TryParse(person.Gender, true, out PersonGenderEnum gender) ? gender : null,
-                RecievesNewsLetters = true,
-                CountryID = Guid.NewGuid(),
-            };
+            var personUpdateRequest = _fixture.Build<PersonUpdateRequest>().With(p=>p.Email , "Jamie@Ravens.com").With(p=>p.PersonID , person.PersonID).Create();
             //Act
             var updatedPerson =await _personsService.UpdatePerson(personUpdateRequest);
             
@@ -359,11 +244,7 @@ namespace CRUDTests.PersonTests
         public async Task UpdatePerson_NullPerson()
         {
             //Arrange
-            var personUpdateRequest = new PersonUpdateRequest()
-            {
-                PersonID = Guid.NewGuid(),
-                Address = "Changed Address",
-            };
+            var personUpdateRequest = _fixture.Build<PersonUpdateRequest>().Without(p=>p.PersonName).Create();
             //Assert
             await Assert.ThrowsAsync<ArgumentException>(async () =>
                 {
@@ -376,11 +257,7 @@ namespace CRUDTests.PersonTests
         public async Task UpdatePerson_InvalidPersonID()
         {
             //Arrange
-            var personUpdateRequest = new PersonUpdateRequest()
-            {
-                PersonID = Guid.NewGuid(),
-                Address = "Changed Address",
-            };
+            var personUpdateRequest = _fixture.Build<PersonUpdateRequest>().With(p=>p.PersonID , Guid.NewGuid()).Create();
             //Assert
             await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
@@ -406,16 +283,8 @@ namespace CRUDTests.PersonTests
         public async Task DeletePerson_ValidPersonID()
         {
             //Arrange
-            PersonAddRequest? personAddRequest = new PersonAddRequest()
-            {
-                PersonName = "Jamie",
-                Address = "Casterly Rock",
-                CountryID = Guid.NewGuid(),
-                DateOfBirth = DateTime.Now,
-                Email = "Jamie@Ravens.com",
-                Gender = PersonGenderEnum.Male,
-                RecievesNewsLetters = true
-            };
+            PersonAddRequest? personAddRequest =
+                _fixture.Build<PersonAddRequest>().With(p => p.Email, "Jamie@Ravens.com").Create();
             var person =await _personsService.AddPerson(personAddRequest);
             //Act
             var isDeleted =await _personsService.DeletePerson(person.PersonID);
