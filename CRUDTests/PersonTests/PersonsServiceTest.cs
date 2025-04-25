@@ -153,10 +153,6 @@ namespace CRUDTests.PersonTests
                 await _personsService.AddPerson(personAddRequest);
             }
             var personsFromGetAllPersons = await _personsService.GetAllPersons();
-            foreach (var person in personsFromGetAllPersons)
-            {
-                _testOutputHelper.WriteLine($"{person}");
-            }    
             //Assert
             personsFromGetAllPersons.Count.Should().Be(2);
         }
@@ -177,10 +173,7 @@ namespace CRUDTests.PersonTests
             }
             var personsFromGetFilteredPersons =await _personsService.GetFilteredPersons(nameof(Person.PersonName) , "");
             var personsFromGetAllPersons =await _personsService.GetAllPersons();
-            foreach (var person in personsFromGetFilteredPersons)
-            {
-                _testOutputHelper.WriteLine($"{person}");
-            }    
+    
             //Assert
             personsFromGetFilteredPersons.Count.Should().Be(personsFromGetAllPersons.Count);
         }
@@ -196,10 +189,6 @@ namespace CRUDTests.PersonTests
                 await _personsService.AddPerson(personAddRequest);
             }
             var personsFromGetFilteredPersons = await _personsService.GetFilteredPersons(nameof(Person.PersonName) , "ja");
-            foreach (var person in personsFromGetFilteredPersons)
-            {
-                _testOutputHelper.WriteLine($"{person}");
-            }    
             //Assert
             personsFromGetFilteredPersons.Count.Should().Be(2);
         }
@@ -229,6 +218,7 @@ namespace CRUDTests.PersonTests
              {
                  personsFromGetSortedPersons.ElementAt(i).Should().Be(actualSortedPersons.ElementAt(i));
              }
+             actualSortedPersons.Should().BeInDescendingOrder(temp => temp.PersonName);
 
          }
          #endregion
