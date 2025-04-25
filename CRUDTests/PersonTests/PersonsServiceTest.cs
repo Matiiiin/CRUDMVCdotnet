@@ -8,15 +8,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using EntityFrameworkCoreMock;
+using Microsoft.EntityFrameworkCore;
+using ServiceContracts;
 using ServiceContracts.Enums;
 using Xunit.Abstractions;
+using Moq;
+
 namespace CRUDTests.PersonTests
 {
-    public class PersonsServiceTest(ITestOutputHelper testOutputHelper)
+    public class PersonsServiceTest
     {
-        private readonly PersonsService _personsService = new();
-        private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
+        private readonly IPersonsService _personsService;
+        private readonly ICountriesService _countriesService;
+        private readonly ITestOutputHelper _testOutputHelper ;
 
+        public PersonsServiceTest(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+            var personsInitialData = new List<Person>() { };
+            var dbContextMock = new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
+            dbContextMock.CreateDbSetMock(temp=>temp.Persons , personsInitialData);
+            var dbContext = dbContextMock.Object;
+            _countriesService = new CountriesService(dbContext);
+            _personsService = new PersonsService(dbContext , countriesService: _countriesService);
+
+        }
         #region AddPerson
         [Fact]
         public async Task AddPerson_NullPersonAddRequest()
@@ -323,7 +340,12 @@ namespace CRUDTests.PersonTests
             {
                 PersonID = person.PersonID,
                 PersonName = person.PersonName,
+                Email = "Jamie@Ravens.com",
+                DateOfBirth = person.DateOfBirth,
                 Address = "Changed Address",
+                Gender = Enum.TryParse(person.Gender, true, out PersonGenderEnum gender) ? gender : null,
+                RecievesNewsLetters = true,
+                CountryID = Guid.NewGuid(),
             };
             //Act
             var updatedPerson =await _personsService.UpdatePerson(personUpdateRequest);

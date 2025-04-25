@@ -6,15 +6,26 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Entities;
+using EntityFrameworkCoreMock;
+using Microsoft.EntityFrameworkCore;
+using ServiceContracts;
+using Moq;
 
 namespace CRUDTests.CountryTests
 {
     public class CountriesServiceTest
     {
-        private readonly CountriesService _countriesService;
+        private readonly ICountriesService _countriesService;
         public CountriesServiceTest()
         {
-            _countriesService = new CountriesService();
+            var countriesInitialData = new List<Country>() { };
+            var dbContextMock =
+                new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
+            dbContextMock.CreateDbSetMock(temp => temp.Countries, countriesInitialData);
+            var dbContext = dbContextMock.Object;
+            _countriesService = new CountriesService(dbContext);
+
         }
 
         #region AddCountry
@@ -50,7 +61,7 @@ namespace CRUDTests.CountryTests
                 });
         }
         [Fact]
-        public async Task AddCountry_DupliacteCountryName()
+        public async Task AddCountry_DuplicateCountryName()
         {
             //Arrange
             CountryAddRequest? request1 = new CountryAddRequest()

@@ -42,10 +42,10 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     #endregion
 
     [Route("[action]")]
-    public IActionResult test()
+    public async Task<IActionResult> test([FromForm] string countryName)
     {
-       var query =  _db.Persons.FromSqlRaw("exec getallpersonss");
-        return Json(query.ToList());
+        var country = await _countriesService.AddCountry(new CountryAddRequest() { CountryName = countryName });
+        return Json(country);
     }  
     
     [Route("[action]")]

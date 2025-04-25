@@ -28,6 +28,7 @@ namespace Services
             }
             var country = countryAddRequest.ToCountry();
             await _db.Countries.AddAsync(country);
+            await _db.SaveChangesAsync();
 
             return country.ToCountryResponse();
         }

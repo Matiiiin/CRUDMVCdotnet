@@ -180,7 +180,15 @@ namespace Services
                 throw new ArgumentException("Given person does not exist");
             }
 
-            _db.sp_UpdatePerson(personUpdateRequest.ToPerson());
+            // _db.sp_UpdatePerson(personUpdateRequest.ToPerson());
+            person.PersonName = personUpdateRequest.PersonName;
+            person.DateOfBirth = personUpdateRequest.DateOfBirth;
+            person.Gender = personUpdateRequest.Gender.ToString();
+            person.CountryID = personUpdateRequest.CountryID;
+            person.Email = personUpdateRequest.Email;
+            person.Address = personUpdateRequest.Address;
+            person.RecievesNewsLetters = personUpdateRequest.RecievesNewsLetters;
+            
             await _db.SaveChangesAsync();            
             return person.ToPersonResponse();
         }
@@ -192,9 +200,11 @@ namespace Services
                 throw new ArgumentNullException(nameof(personID));
             }
             var person = await _db.Persons.FirstOrDefaultAsync(p => p.PersonID == personID);
+            if (person == null) return false;
+            
             _db.Persons.Remove(await _db.Persons.FirstAsync(p=>p.PersonID == personID));
             await _db.SaveChangesAsync();
-            return (person != null) ? true : false;
+            return true;
         }   
     }
 }
