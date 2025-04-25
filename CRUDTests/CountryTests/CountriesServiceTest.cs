@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoFixture;
 using Entities;
 using EntityFrameworkCoreMock;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace CRUDTests.CountryTests
     public class CountriesServiceTest
     {
         private readonly ICountriesService _countriesService;
+        private readonly IFixture _fixture;
         public CountriesServiceTest()
         {
             var countriesInitialData = new List<Country>() { };
@@ -25,7 +27,7 @@ namespace CRUDTests.CountryTests
             dbContextMock.CreateDbSetMock(temp => temp.Countries, countriesInitialData);
             var dbContext = dbContextMock.Object;
             _countriesService = new CountriesService(dbContext);
-
+            _fixture = new Fixture();
         }
 
         #region AddCountry
@@ -47,10 +49,7 @@ namespace CRUDTests.CountryTests
         public async Task AddCountry_NullCountryName()
         {
             //Arrange
-            CountryAddRequest? request = new CountryAddRequest()
-            {
-                CountryName = null
-            };
+            CountryAddRequest? request = _fixture.Build<CountryAddRequest>().Without(c=>c.CountryName).Create();
 
             //Assert
             await Assert.ThrowsAsync<ArgumentException>(
@@ -64,32 +63,24 @@ namespace CRUDTests.CountryTests
         public async Task AddCountry_DuplicateCountryName()
         {
             //Arrange
-            CountryAddRequest? request1 = new CountryAddRequest()
-            {
-                CountryName = "Japan"
-            };
-            CountryAddRequest? request2 = new CountryAddRequest()
-            {
-                CountryName = "Japan"
-            };
+            var requests = _fixture.Build<CountryAddRequest>().With(c=>c.CountryName , "Japan").CreateMany(2);
 
             //Assert
             await Assert.ThrowsAsync<ArgumentException>(
                 async () =>
                 {
                     //Act
-                    await _countriesService.AddCountry(request1);
-                    await _countriesService.AddCountry(request2);
+                    foreach (var request in requests)
+                    {
+                        await _countriesService.AddCountry(request);
+                    }
                 });
         }
         [Fact]
         public async Task AddCountry_ProperCountryAddRequest()
         {
             //Arrange
-            CountryAddRequest? request = new CountryAddRequest()
-            {
-                CountryName = "Australia"
-            };
+            CountryAddRequest? request = _fixture.Create<CountryAddRequest>();
             //Act
             var response =await _countriesService.AddCountry(request);
             var countriesResponse = await _countriesService.GetAllCountries(); 
@@ -115,11 +106,7 @@ namespace CRUDTests.CountryTests
         public async Task GetAllCountries_AddFewCountries()
         {
             //Arrange
-            var countryAddRequests = new List<CountryAddRequest>() {
-                new (){CountryName="Andalos"},
-                new (){CountryName="Bravvos"},
-                new (){CountryName="Meereen"},
-            };
+            var countryAddRequests =_fixture.CreateMany<CountryAddRequest>(2);
 
             //Act
             var countryResponses = new List<CountryResponse>();
@@ -157,7 +144,7 @@ namespace CRUDTests.CountryTests
         public async Task GetCountryByCountryID_ProperCountryID()
         {
             //Arrange
-            var countryAddRequest = new CountryAddRequest() { CountryName = "Dummy" };
+            var countryAddRequest = _fixture.Create<CountryAddRequest>();
             var createdCountry =await _countriesService.AddCountry(countryAddRequest);
             var nonExistantCountryID = Guid.NewGuid();
             //Act
