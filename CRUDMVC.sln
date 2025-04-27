@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Services", "Services\Servic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepositoryContracts", "RepositoryContracts\RepositoryContracts.csproj", "{6EA34A07-ACDD-429D-AD53-A0E18A7C035B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repositories", "Repositories\Repositories.csproj", "{6AB51722-AFEF-4B74-B551-EE45CF7612DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{6EA34A07-ACDD-429D-AD53-A0E18A7C035B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EA34A07-ACDD-429D-AD53-A0E18A7C035B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EA34A07-ACDD-429D-AD53-A0E18A7C035B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6AB51722-AFEF-4B74-B551-EE45CF7612DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AB51722-AFEF-4B74-B551-EE45CF7612DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AB51722-AFEF-4B74-B551-EE45CF7612DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AB51722-AFEF-4B74-B551-EE45CF7612DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
