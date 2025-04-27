@@ -162,8 +162,8 @@ namespace Services
             }
 
             // _db.sp_UpdatePerson(personUpdateRequest.ToPerson());
-
-            return (await _personsRepository.UpdatePerson(personUpdateRequest.ToPerson())).ToPersonResponse();
+            var x = await _personsRepository.UpdatePerson(personUpdateRequest.ToPerson());
+            return (x).ToPersonResponse();
         }
 
         public async Task<bool> DeletePerson(Guid? personID)

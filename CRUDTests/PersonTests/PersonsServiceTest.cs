@@ -5,6 +5,7 @@ using Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using ServiceContracts;
 using ServiceContracts.Enums;
 using Xunit.Abstractions;
 using Moq;
+using RepositoryContracts;
 
 namespace CRUDTests.PersonTests
 {
@@ -23,16 +25,14 @@ namespace CRUDTests.PersonTests
     {
         private readonly IPersonsService _personsService;
         private readonly ITestOutputHelper _testOutputHelper ;
+        private readonly Mock<IPersonsRepository> _personsRepositoryMock;
         private readonly IFixture _fixture;
 
         public PersonsServiceTest(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
-            var personsInitialData = new List<Person>() { };
-            var dbContextMock = new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
-            dbContextMock.CreateDbSetMock(temp=>temp.Persons , personsInitialData);
-            var dbContext = dbContextMock.Object;
-            _personsService = new PersonsService(null);
+            _personsRepositoryMock = new Mock<IPersonsRepository>();
+            _personsService = new PersonsService(_personsRepositoryMock.Object);
             _fixture = new Fixture();
 
         }
@@ -105,10 +105,12 @@ namespace CRUDTests.PersonTests
         {
             //Arrange
             var addPersonRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").Create();
-            var createdPersonResponse = await _personsService.AddPerson(addPersonRequest);
+            var person = addPersonRequest.ToPerson();
+            _personsRepositoryMock.Setup(r=>r.GetPersonByPersonID(person.PersonID)).ReturnsAsync(person);
+            var createdPersonResponse = person.ToPersonResponse();
             
             //Act
-            var personRetrievedFromGetPersonByPersonId = await _personsService.GetPersonByPersonID(createdPersonResponse.PersonID);
+            var personRetrievedFromGetPersonByPersonId = await _personsService.GetPersonByPersonID(person.PersonID);
             
             //Assert
             personRetrievedFromGetPersonByPersonId.Should().BeEquivalentTo(createdPersonResponse);
@@ -132,9 +134,13 @@ namespace CRUDTests.PersonTests
         public async Task GetAllPersons_EmptyList()
         {
             //Arrange
-            var emptyPersonResponseList = new List<PersonResponse>();
+            var emptyPersonResponseList = new List<PersonResponse>(){};
+            var emtpyPersonsList = new List<Person>(){};
+            _personsRepositoryMock.Setup(r=>r.GetAllPersons()).ReturnsAsync(emtpyPersonsList);
+            
             //Act
             var persons = await _personsService.GetAllPersons();
+            
             //Assert
             persons.Should().BeEmpty();
             persons.Should().BeEquivalentTo(emptyPersonResponseList);
@@ -144,13 +150,11 @@ namespace CRUDTests.PersonTests
         {
             //Arrange
             var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").CreateMany(2);
-
+            _personsRepositoryMock.Setup(r => r.GetAllPersons()).ReturnsAsync(personsAddRequest.Select(request => request.ToPerson()).ToList());
+            
             //Act
-            foreach (var personAddRequest in personsAddRequest)
-            {
-                await _personsService.AddPerson(personAddRequest);
-            }
             var personsFromGetAllPersons = await _personsService.GetAllPersons();
+
             //Assert
             personsFromGetAllPersons.Count.Should().Be(2);
         }
@@ -163,13 +167,10 @@ namespace CRUDTests.PersonTests
         {
             //Arrange
             var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").CreateMany(2);
-
+            _personsRepositoryMock.Setup(r=>r.GetAllPersons()).ReturnsAsync(personsAddRequest.Select(request => request.ToPerson()).ToList());
+            _personsRepositoryMock.Setup(r => r.GetFilteredPersons(It.IsAny<Expression<Func<Person, bool>>>())).ReturnsAsync(personsAddRequest.Select(request => request.ToPerson()).ToList());            
             //Act
-            foreach (var personAddRequest in personsAddRequest)
-            {
-                var addedPerson = await _personsService.AddPerson(personAddRequest);
-            }
-            var personsFromGetFilteredPersons =await _personsService.GetFilteredPersons(nameof(Person.PersonName) , "");
+            var personsFromGetFilteredPersons =await _personsService.GetFilteredPersons(nameof(Person.PersonName) , null);
             var personsFromGetAllPersons =await _personsService.GetAllPersons();
     
             //Assert
@@ -180,13 +181,10 @@ namespace CRUDTests.PersonTests
         {
             //Arrange
             var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").With(p=>p.PersonName , "jahn").CreateMany(2);
-
+            _personsRepositoryMock.Setup(r=>r.GetFilteredPersons(It.IsAny<Expression<Func<Person, bool>>>())).ReturnsAsync(personsAddRequest.Select(request => request.ToPerson()).ToList());
             //Act
-            foreach (var personAddRequest in personsAddRequest)
-            {
-                await _personsService.AddPerson(personAddRequest);
-            }
             var personsFromGetFilteredPersons = await _personsService.GetFilteredPersons(nameof(Person.PersonName) , "ja");
+            
             //Assert
             personsFromGetFilteredPersons.Count.Should().Be(2);
         }
@@ -198,13 +196,7 @@ namespace CRUDTests.PersonTests
          {
              //Arrange
              var personsAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").CreateMany(2);
-
-             // var personsFromAdd = new List<PersonResponse>();
-             foreach (var addRequest in personsAddRequest)
-             {
-                 var addedPerson = await _personsService.AddPerson(addRequest);
-                 // personsFromAdd.Add(addedPerson);
-             }
+             _personsRepositoryMock.Setup(r=>r.GetAllPersons()).ReturnsAsync(personsAddRequest.Select(request => request.ToPerson()).ToList());
              var allPersons =await _personsService.GetAllPersons();
              
              //Act
@@ -226,17 +218,25 @@ namespace CRUDTests.PersonTests
         [Fact]
         public async Task UpdatePerson_ProperPerson()
         {
-            //Arrange
-            var personAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").Create();
+            // Arrange
+            var personAddRequest = _fixture.Build<PersonAddRequest>().With(p => p.Email, "John@gmail.com").Create();
+            var person = personAddRequest.ToPerson();
+            _personsRepositoryMock.Setup(r => r.GetPersonByPersonID(person.PersonID)).ReturnsAsync(person);
 
-            var person = await _personsService.AddPerson(personAddRequest);
-            var personUpdateRequest = _fixture.Build<PersonUpdateRequest>().With(p=>p.Email , "Jamie@Ravens.com").With(p=>p.PersonID , person.PersonID).Create();
-            //Act
-            var updatedPerson =await _personsService.UpdatePerson(personUpdateRequest);
-            
-            //Assert
-            person.PersonID.Should().Be(updatedPerson.PersonID);
-            person.Address.Should().NotBe(updatedPerson.Address);
+            var personUpdateRequest = _fixture.Build<PersonUpdateRequest>()
+                .With(p => p.Email, "Jamie@Ravens.com")
+                .With(p => p.PersonID, person.PersonID)
+                .Create();
+
+            var updatedPerson = personUpdateRequest.ToPerson();
+            _personsRepositoryMock.Setup(r => r.UpdatePerson(It.IsAny<Person>())).ReturnsAsync(updatedPerson);
+
+            // Act
+            var result = await _personsService.UpdatePerson(personUpdateRequest);
+
+            // Assert
+            result.PersonID.Should().Be(person.PersonID);
+            result.Email.Should().Be("Jamie@Ravens.com");
 
         }
         [Fact]
@@ -288,9 +288,13 @@ namespace CRUDTests.PersonTests
             //Arrange
             PersonAddRequest? personAddRequest =
                 _fixture.Build<PersonAddRequest>().With(p => p.Email, "Jamie@Ravens.com").Create();
-            var person =await _personsService.AddPerson(personAddRequest);
+            var person = personAddRequest.ToPerson();
+            _personsRepositoryMock.Setup(r=>r.GetPersonByPersonID(person.PersonID)).ReturnsAsync(person);
+            _personsRepositoryMock.Setup(r=>r.DeletePerson(person.PersonID)).ReturnsAsync(true);
+            
             //Act
             var isDeleted =await _personsService.DeletePerson(person.PersonID);
+            
             //Assert
             isDeleted.Should().BeTrue();
         }
