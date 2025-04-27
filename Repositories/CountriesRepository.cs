@@ -15,7 +15,7 @@ public class CountriesRepository(ApplicationDbContext db)  : ICountriesRepositor
         return country;
     }
 
-    public async Task<Country?> GetCountryByCountryID(Guid countryID)
+    public async Task<Country?> GetCountryByCountryID(Guid? countryID)
     {
         return await _db.Countries.FirstOrDefaultAsync(c => c.CountryID == countryID);
     }
