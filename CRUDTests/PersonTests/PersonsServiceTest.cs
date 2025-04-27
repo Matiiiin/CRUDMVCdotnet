@@ -22,7 +22,6 @@ namespace CRUDTests.PersonTests
     public class PersonsServiceTest
     {
         private readonly IPersonsService _personsService;
-        private readonly ICountriesService _countriesService;
         private readonly ITestOutputHelper _testOutputHelper ;
         private readonly IFixture _fixture;
 
@@ -33,8 +32,7 @@ namespace CRUDTests.PersonTests
             var dbContextMock = new DbContextMock<ApplicationDbContext>(new DbContextOptionsBuilder<ApplicationDbContext>().Options);
             dbContextMock.CreateDbSetMock(temp=>temp.Persons , personsInitialData);
             var dbContext = dbContextMock.Object;
-            _countriesService = new CountriesService(dbContext);
-            _personsService = new PersonsService(dbContext , countriesService: _countriesService);
+            _personsService = new PersonsService(null);
             _fixture = new Fixture();
 
         }

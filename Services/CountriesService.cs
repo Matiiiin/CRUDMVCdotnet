@@ -5,7 +5,7 @@ using ServiceContracts;
 using ServiceContracts.DTO;
 namespace Services
 {
-    public class CountriesService(ICountriesRepository countriesRepository) : ICountriesService
+    public class CountriesService(ICountriesRepository _countriesRepository) : ICountriesService
     {
         public async Task<CountryResponse> AddCountry(CountryAddRequest? countryAddRequest)
         {
@@ -17,17 +17,17 @@ namespace Services
             {
                 throw new ArgumentException(nameof(countryAddRequest.CountryName));
             }
-            if (await countriesRepository.GetCountryByCountryName(countryAddRequest.CountryName) != null)
+            if (await _countriesRepository.GetCountryByCountryName(countryAddRequest.CountryName) != null)
             {
                 throw new ArgumentException("There is already a Country with this name");
             }
 
-            return (await countriesRepository.AddCountry(countryAddRequest.ToCountry())).ToCountryResponse();
+            return (await _countriesRepository.AddCountry(countryAddRequest.ToCountry())).ToCountryResponse();
         }
 
         public async Task<List<CountryResponse>> GetAllCountries()
         {
-            return (await countriesRepository.GetAllCountries()).Select(c=>c.ToCountryResponse()).ToList();
+            return (await _countriesRepository.GetAllCountries()).Select(c=>c.ToCountryResponse()).ToList();
         }
 
         public async Task<CountryResponse?> GetCountryByCountryID(Guid? countryID)
@@ -37,7 +37,7 @@ namespace Services
                 return null;
             }
 
-            return (await countriesRepository.GetCountryByCountryID(countryID)).ToCountryResponse();
+            return (await _countriesRepository.GetCountryByCountryID(countryID)).ToCountryResponse();
         }
 
 
