@@ -37,7 +37,7 @@ namespace Services
                 return null;
             }
 
-            return (await _countriesRepository.GetCountryByCountryID(countryID)).ToCountryResponse();
+            return (await _countriesRepository.GetCountryByCountryID(countryID))?.ToCountryResponse();
         }
 
 

@@ -73,13 +73,21 @@ namespace CRUDTests.PersonTests
         [Fact]
         public async Task AddPerson_ProperPersonAddRequest()
         {
-            //Arrange
-            PersonAddRequest? personAddRequest = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "John@gmail.com").Create();
-            //Act
-            var personResponse =await _personsService.AddPerson(personAddRequest);
-            var persons =await _personsService.GetAllPersons();
-            //Assert
-            
+            // Arrange
+            PersonAddRequest? personAddRequest = _fixture.Build<PersonAddRequest>()
+                .With(p => p.Email, "John@gmail.com")
+                .Create();
+
+            var person = personAddRequest.ToPerson();
+
+            _personsRepositoryMock.Setup(r => r.AddPerson(It.IsAny<Person>())).ReturnsAsync(person);
+            _personsRepositoryMock.Setup(r => r.GetAllPersons()).ReturnsAsync(new List<Person> { person });
+
+            // Act
+            var personResponse = await _personsService.AddPerson(personAddRequest);
+            var persons = await _personsService.GetAllPersons();
+
+            // Assert
             personResponse.PersonID.Should().NotBeEmpty();
             persons.Should().Contain(personResponse);
         }
