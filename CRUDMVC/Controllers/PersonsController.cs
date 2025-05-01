@@ -11,11 +11,10 @@ using ServiceContracts.Enums;
 namespace CRUDMVC.Controllers;
 
 [Route("[controller]")]
-public class PersonsController(IPersonsService personsService , ICountriesService countriesService , ApplicationDbContext db)  : Controller
+public class PersonsController(IPersonsService personsService , ICountriesService countriesService)  : Controller
 {
     private readonly IPersonsService _personsService = personsService;
     private readonly ICountriesService _countriesService = countriesService;
-    private readonly ApplicationDbContext _db = db;
 
     #region FileUpload test Action
 
@@ -40,13 +39,6 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     // }
 
     #endregion
-
-    [Route("[action]")]
-    public async Task<IActionResult> test([FromForm] string countryName)
-    {
-        var country = await _countriesService.AddCountry(new CountryAddRequest() { CountryName = countryName });
-        return Json(country);
-    }  
     
     [Route("[action]")]
     [Route("/")]
@@ -132,7 +124,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
                 .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
             ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
             var personResponse = await _personsService.GetPersonByPersonID(personUpdateRequest.PersonID);
-            return View("Edit" , personResponse!.ToPersonUpdateRequest()); 
+            return View("Edit" , personResponse?.ToPersonUpdateRequest()); 
         }
         // personUpdateRequest.PersonID = personID;
         await _personsService.UpdatePerson(personUpdateRequest);
@@ -157,6 +149,6 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
         if (await _personsService.GetPersonByPersonID(personID) == null) return NotFound("Person not found");
         
         await _personsService.DeletePerson(personID);
-        return RedirectToAction("Index");
+        return RedirectToAction("Index" , "Persons");
     }
 }
