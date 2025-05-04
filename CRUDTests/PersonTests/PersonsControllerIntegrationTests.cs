@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Net.Http.Json;
+using FluentAssertions;
 using HtmlAgilityPack;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -44,6 +45,30 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
             var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
             table.Should().NotBeNull();
         }
+    }
+
+    #endregion
+    #region Create
+
+    [Fact]
+    public async Task Create_ShouldReturnViewWithInputs()
+    {
+        // Act
+        var response = await _client.GetAsync("/Persons/Create");
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var html = new HtmlDocument();
+        html.LoadHtml(await response.Content.ReadAsStringAsync());
+        var document = html.DocumentNode;
+        document.Should().NotBeNull();
+        document.SelectSingleNode("//select[@id=\"CountryID\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"PersonName\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"Email\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"DateOfBirth\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"Gender\"]").Should().NotBeNull();
+        document.SelectSingleNode("//textarea[@id=\"Address\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"RecievesNewsLetters\"]").Should().NotBeNull();
     }
 
     #endregion
