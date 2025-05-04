@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using HtmlAgilityPack;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -16,11 +17,13 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         _client.BaseAddress = new Uri("http://localhost:5114");
     }
 
+    #region Index
+
     [Fact]
     public async Task Index_ShouldReturnAllPersons()
     {
         //Arrange
-        var requestUris = new string[] {"/Persons/Index" , "/"};
+        var requestUris = new [] {"/Persons/Index" , "/"};
         var responses = new List<HttpResponseMessage>();
         
         //Act
@@ -34,6 +37,15 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         foreach (var response in responses)
         {
             response.EnsureSuccessStatusCode();
+            var html = new HtmlDocument();
+            html.LoadHtml(await response.Content.ReadAsStringAsync());
+            var document = html.DocumentNode;
+            document.Should().NotBeNull();
+            var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
+            table.Should().NotBeNull();
         }
     }
+
+    #endregion
+
 }
