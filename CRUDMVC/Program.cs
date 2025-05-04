@@ -13,11 +13,14 @@ builder.Services.AddScoped<ICountriesService, CountriesService>();
 builder.Services.AddScoped<IPersonsService, PersonsService>();
 builder.Services.AddScoped<ICountriesRepository, CountriesRepository>();
 builder.Services.AddScoped<IPersonsRepository, PersonsRepository>();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+if (!builder.Environment.IsEnvironment("Testing"))
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-    options.EnableSensitiveDataLogging();
-});
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+        options.EnableSensitiveDataLogging();
+    });
+}
 builder.Services.Configure<FormOptions>(options =>
 {
 options.MultipartBodyLengthLimit = 99999999999999;
@@ -33,3 +36,5 @@ app.UseRouting();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
