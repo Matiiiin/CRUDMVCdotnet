@@ -187,6 +187,22 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         document.SelectSingleNode("//input[@id='PersonName']").Should().NotBeNull();
         document.SelectSingleNode("//h2[contains(text(), 'Edit Person')]").Should().NotBeNull();
     }
+    
+   
+    [Fact]
+    public async Task Edit_ShouldReturnNotFound_WhenPersonDoesNotExist()
+    {
+        // Arrange
+        var nonExistentPersonID = Guid.NewGuid();
+
+        // Act
+        var response = await _client.GetAsync($"/Persons/Edit/{nonExistentPersonID}");
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+        response.Content.Should().NotBeNull();
+    }
+
     #endregion
 
 
