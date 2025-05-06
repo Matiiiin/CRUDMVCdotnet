@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceContracts;
+using Services;
 
 namespace CRUDTests;
 
@@ -28,6 +30,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase("DatabaseForTesting");
             });
+            // services.AddScoped<IPersonsService , PersonsService>();
+
 
         });
 
