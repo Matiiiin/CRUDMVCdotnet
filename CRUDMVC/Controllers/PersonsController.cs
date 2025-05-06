@@ -18,26 +18,19 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
 
     #region FileUpload test Action
 
-    // [Route("[action]")]
-    // [HttpPost]
-    // [RequestSizeLimit(2_000_000_000)]
-    // // [DisableRequestSizeLimit] // Alternatively use [RequestSizeLimit(100_000_000)]
-    // [RequestFormLimits(MultipartBodyLengthLimit = 2_000_000_000)]
-    // public async Task<IActionResult> Download(IFormFile file)
-    // {
-    //     // using (var stream = new FileStream($"./{file.FileName}" , FileMode.Create))
-    //     // {
-    //     //     file.CopyTo(stream);
-    //     // }
-    //     // using (MemoryStream stream = new MemoryStream())
-    //     // {
-    //     //     await Request.Body.CopyToAsync(stream);
-    //     //     //the “stream” streams the file that is uploaded from the client
-    //     //     return Json(stream);
-    //     //
-    //     // }
-    // }
-
+    [Route("[action]")]
+    public async Task TestLog([FromServices]ILogger<PersonsController> logger)
+    {
+        
+        logger.LogInformation("Test Log");
+        logger.LogError("Test Error");
+        logger.LogWarning("Test Warning");
+        logger.LogCritical("Test Critical");
+        logger.LogTrace("test Trace");
+        logger.LogDebug("test Debug");
+        logger.Log(LogLevel.None,"test ");
+        
+    }
     #endregion
     
     [Route("[action]")]

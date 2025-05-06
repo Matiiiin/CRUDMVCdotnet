@@ -1,5 +1,7 @@
 using Entities;
+using Humanizer;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using RepositoryContracts;
@@ -13,6 +15,12 @@ builder.Services.AddScoped<ICountriesService, CountriesService>();
 builder.Services.AddScoped<IPersonsService, PersonsService>();
 builder.Services.AddScoped<ICountriesRepository, CountriesRepository>();
 builder.Services.AddScoped<IPersonsRepository, PersonsRepository>();
+builder.Services.AddHttpLogging(options =>
+{
+    options.LoggingFields = HttpLoggingFields.Request;
+});
+
+
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -26,6 +34,9 @@ builder.Services.Configure<FormOptions>(options =>
 options.MultipartBodyLengthLimit = 99999999999999;
 });
 var app = builder.Build();
+
+app.UseHttpLogging();
+
 if (builder.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
