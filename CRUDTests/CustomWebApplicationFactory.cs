@@ -1,4 +1,5 @@
-﻿using Entities;
+﻿using CRUDMVC.Controllers;
+using Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,6 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         base.ConfigureWebHost(builder);
         builder.ConfigureServices(services =>
         {
-            // Remove all existing DbContextOptions registrations
             var descriptors = services.Where(s => s.ServiceType == typeof(DbContextOptions<ApplicationDbContext>)).ToList();
             if (descriptors != null)
             {
@@ -25,14 +25,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 }
             }
 
-            // Add the InMemory database
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseInMemoryDatabase("DatabaseForTesting");
             });
-            // services.AddScoped<IPersonsService , PersonsService>();
-
-
         });
 
         builder.UseEnvironment("Testing");

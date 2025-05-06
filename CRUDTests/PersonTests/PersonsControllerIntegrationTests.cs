@@ -5,6 +5,7 @@ using Xunit.Sdk;
 using System.Net.Http;
 using System.Net.Http.Json;
 using AutoFixture;
+using CRUDMVC.Controllers;
 using Entities;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceContracts;
@@ -92,33 +93,73 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
     {
         // Arrange
         var validPerson = _fixture.Build<PersonAddRequest>().With(p=>p.Email , "test@gmail.com").Create();
-            var formData = new MultipartFormDataContent
-            {
-                { new StringContent(validPerson.PersonName!), "PersonName" },
-                { new StringContent(validPerson.Email!), "Email" },
-                { new StringContent(validPerson.DateOfBirth.ToString()!), "DateOfBirth" },
-                { new StringContent(validPerson.Gender.ToString()!), "Gender" },
-                { new StringContent(validPerson.CountryID.ToString()!), "CountryID" },
-                { new StringContent(validPerson.Address!), "Address" },
-                { new StringContent(validPerson.RecievesNewsLetters.ToString()), "RecievesNewsLetters" }
-            };
-            // Act
-            var response = await _client.PostAsync(
-                "Persons/Store",
-                formData 
-            );
+        var formData = new MultipartFormDataContent
+        {
+            { new StringContent(validPerson.PersonName!), "PersonName" },
+            { new StringContent(validPerson.Email!), "Email" },
+            { new StringContent(validPerson.DateOfBirth.ToString()!), "DateOfBirth" },
+            { new StringContent(validPerson.Gender.ToString()!), "Gender" },
+            { new StringContent(validPerson.CountryID.ToString()!), "CountryID" },
+            { new StringContent(validPerson.Address!), "Address" },
+            { new StringContent(validPerson.RecievesNewsLetters.ToString()), "RecievesNewsLetters" }
+        };
+        // Act
+        var response = await _client.PostAsync(
+            "Persons/Store",
+            formData 
+        );
 
-            // Assert
-            response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
-            response.EnsureSuccessStatusCode();
-            var html = new HtmlDocument();
-            html.LoadHtml(await response.Content.ReadAsStringAsync());
-            var document = html.DocumentNode;
-            document.Should().NotBeNull();
-            var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
-            table.Should().NotBeNull();
-            (await _personsService.GetAllPersons()).FirstOrDefault()!.PersonName.Should().Be(validPerson.ToPerson().ToPersonResponse().PersonName);
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        response.EnsureSuccessStatusCode();
+        var html = new HtmlDocument();
+        html.LoadHtml(await response.Content.ReadAsStringAsync());
+        var document = html.DocumentNode;
+        document.Should().NotBeNull();
+        var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
+        table.Should().NotBeNull();
+        (await _personsService.GetAllPersons()).FirstOrDefault()!.PersonName.Should().Be(validPerson.ToPerson().ToPersonResponse().PersonName);
     }
-#endregion
+        [Fact]
+    public async Task Store_ShouldReturnViewWithErrors_WhenModelIsInvalid()
+    {
+        // Arrange
+        var invalidPerson = _fixture.Build<PersonAddRequest>().With(p => p.Email , "asdasd").Create();
+        var formData = new MultipartFormDataContent()
+        {
+            { new StringContent(invalidPerson.PersonName!), "PersonName" },
+            { new StringContent(invalidPerson.Email!), "Email" },
+            { new StringContent(invalidPerson.DateOfBirth.ToString()!), "DateOfBirth" },
+            { new StringContent(invalidPerson.Gender.ToString()!), "Gender" },
+            { new StringContent(invalidPerson.CountryID.ToString()!), "CountryID" },
+            { new StringContent(invalidPerson.Address!), "Address" },
+        };
+        // Act
+        var response = await _client.PostAsync("/Persons/Store", formData);
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var html = new HtmlDocument();
+        html.LoadHtml(await response.Content.ReadAsStringAsync());
+        var document = html.DocumentNode;
+        //Check create view is displayed
+        document.Should().NotBeNull();
+        document.SelectSingleNode("//select[@id=\"CountryID\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"PersonName\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"Email\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"DateOfBirth\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"Gender\"]").Should().NotBeNull();
+        document.SelectSingleNode("//textarea[@id=\"Address\"]").Should().NotBeNull();
+        document.SelectSingleNode("//input[@id=\"RecievesNewsLetters\"]").Should().NotBeNull();
+        response.EnsureSuccessStatusCode();
+
+        // Check for validation error messages in the response
+        var errorMessages = document.SelectNodes("//span[contains(@class, 'field-validation-error')]");
+        errorMessages.Should().NotBeNull();
+        errorMessages.Should().NotBeEmpty();
+    }
+
+    #endregion
+
 
 }
