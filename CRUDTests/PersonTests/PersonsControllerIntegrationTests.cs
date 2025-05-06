@@ -339,4 +339,69 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
     }
 
     #endregion
+    
+    
+    #region SubmitDelete
+
+    [Fact]
+    public async Task SubmitDelete_ShouldRedirectToIndex_WhenPersonExists()
+    {
+        // Arrange
+        var existingPerson =(await _personsService.GetAllPersons()).FirstOrDefault();
+        var editResponse = await _client.GetAsync($"/Persons/Edit/{existingPerson!.PersonID}");
+        editResponse.EnsureSuccessStatusCode();
+        var editHtml = new HtmlDocument();
+        editHtml.LoadHtml(await editResponse.Content.ReadAsStringAsync());
+        var antiForgeryToken = editHtml.DocumentNode
+            .SelectSingleNode("//input[@name='__RequestVerificationToken']")
+            ?.Attributes["value"]?.Value;
+        var formData = new MultipartFormDataContent()
+        {
+            { new StringContent(existingPerson!.PersonID.ToString()!), "PersonID" },
+            { new StringContent(antiForgeryToken!), "__RequestVerificationToken" }
+        };
+        
+        // Act
+        var response = await _client.PostAsync("/Persons/SubmitDelete", formData);
+
+        // Assert
+        var allPersons = await _personsService.GetAllPersons();
+        allPersons.Should().NotContain(existingPerson);
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        var html = new HtmlDocument();
+        html.LoadHtml(await response.Content.ReadAsStringAsync());
+        var document = html.DocumentNode;
+        document.Should().NotBeNull();
+        var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
+        document.SelectSingleNode("//h1[contains(text(), 'Persons')]").Should().NotBeNull();
+        table.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SubmitDelete_ShouldReturnNotFound_WhenPersonDoesNotExist()
+    {
+        // Arrange
+        var nonExistentPersonID = Guid.NewGuid();
+        var existingPerson =(await _personsService.GetAllPersons()).FirstOrDefault();
+        var editResponse = await _client.GetAsync($"/Persons/Edit/{existingPerson!.PersonID}");
+        editResponse.EnsureSuccessStatusCode();
+        var editHtml = new HtmlDocument();
+        editHtml.LoadHtml(await editResponse.Content.ReadAsStringAsync());
+        var antiForgeryToken = editHtml.DocumentNode
+            .SelectSingleNode("//input[@name='__RequestVerificationToken']")
+            ?.Attributes["value"]?.Value;
+        var formData = new MultipartFormDataContent()
+        {
+            { new StringContent(nonExistentPersonID.ToString()!), "PersonID" },
+            { new StringContent(antiForgeryToken!), "__RequestVerificationToken" },
+        };
+        // Act
+        var response = await _client.PostAsync("/Persons/SubmitDelete", formData);
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
+        
+    }
+
+    #endregion
 }
