@@ -205,5 +205,72 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
 
     #endregion
 
+    
+
+    #region Update
+
+    [Fact]
+public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
+{
+    // Arrange
+    var existingPerson = (await _personsService.GetAllPersons()).FirstOrDefault();
+    var validPersonUpdate = new
+    {
+        PersonID = existingPerson!.PersonID,
+        PersonName = "Updated Name",
+        Email = "updated.email@example.com",
+        DateOfBirth = "1990-01-01",
+        Gender = "Female",
+        CountryID = existingPerson.CountryID,
+        Address = "456 Updated St",
+        RecievesNewsLetters = false
+    };
+
+    var editResponse = await _client.GetAsync($"/Persons/Edit/{validPersonUpdate.PersonID}");
+    editResponse.EnsureSuccessStatusCode();
+    var editHtml = new HtmlDocument();
+    editHtml.LoadHtml(await editResponse.Content.ReadAsStringAsync());
+    var antiForgeryToken = editHtml.DocumentNode
+        .SelectSingleNode("//input[@name='__RequestVerificationToken']")
+        ?.Attributes["value"]?.Value;
+
+    var formData = new MultipartFormDataContent
+    {
+        { new StringContent(validPersonUpdate.PersonName), "PersonName" },
+        { new StringContent(validPersonUpdate.PersonID.ToString()!), "PersonID" },
+        { new StringContent(validPersonUpdate.Email), "Email" },
+        { new StringContent(validPersonUpdate.DateOfBirth), "DateOfBirth" },
+        { new StringContent(validPersonUpdate.Gender), "Gender" },
+        { new StringContent(validPersonUpdate.CountryID.ToString()!), "CountryID" },
+        { new StringContent(validPersonUpdate.Address), "Address" },
+        { new StringContent(validPersonUpdate.RecievesNewsLetters.ToString()), "RecievesNewsLetters" },
+        { new StringContent(antiForgeryToken!), "__RequestVerificationToken" }
+    };
+
+    // Act
+    var response = await _client.PostAsync($"/Persons/Update/{validPersonUpdate.PersonID}", formData);
+
+    // Assert
+    response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+
+    var updatedPerson = await _personsService.GetPersonByPersonID(validPersonUpdate.PersonID);
+    updatedPerson.Should().NotBeNull();
+    updatedPerson!.PersonName.Should().Be(validPersonUpdate.PersonName);
+    updatedPerson.Email.Should().Be(validPersonUpdate.Email);
+    updatedPerson.Gender.Should().Be(validPersonUpdate.Gender);
+    updatedPerson.CountryID.Should().Be(validPersonUpdate.CountryID);
+    updatedPerson.Address.Should().Be(validPersonUpdate.Address);
+    updatedPerson.RecievesNewsLetters.Should().Be(validPersonUpdate.RecievesNewsLetters);
+
+    var html = new HtmlDocument();
+    html.LoadHtml(await response.Content.ReadAsStringAsync());
+    var document = html.DocumentNode;
+    document.Should().NotBeNull();
+    var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
+    document.SelectSingleNode("//h1[contains(text(), 'Persons')]").Should().NotBeNull();
+    table.Should().NotBeNull();
+    }
+
+    #endregion
 
 }
