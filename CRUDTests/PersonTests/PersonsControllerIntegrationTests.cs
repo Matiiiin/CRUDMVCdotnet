@@ -56,6 +56,8 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
             var document = html.DocumentNode;
             document.Should().NotBeNull();
             var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
+            document.SelectSingleNode("//h1[contains(text(), 'Persons')]").Should().NotBeNull();
+
             table.Should().NotBeNull();
         }
     }
@@ -82,6 +84,8 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         document.SelectSingleNode("//input[@id=\"Gender\"]").Should().NotBeNull();
         document.SelectSingleNode("//textarea[@id=\"Address\"]").Should().NotBeNull();
         document.SelectSingleNode("//input[@id=\"RecievesNewsLetters\"]").Should().NotBeNull();
+        document.SelectSingleNode("//h2[contains(text(), 'Create Person')]").Should().NotBeNull();
+
     }
 
     #endregion
@@ -117,6 +121,8 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         var document = html.DocumentNode;
         document.Should().NotBeNull();
         var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
+        document.SelectSingleNode("//h1[contains(text(), 'Persons')]").Should().NotBeNull();
+
         table.Should().NotBeNull();
         (await _personsService.GetAllPersons()).Where(p=>p.PersonName == validPerson.PersonName).Should().NotBeNull();
     }
@@ -151,6 +157,8 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         document.SelectSingleNode("//input[@id=\"Gender\"]").Should().NotBeNull();
         document.SelectSingleNode("//textarea[@id=\"Address\"]").Should().NotBeNull();
         document.SelectSingleNode("//input[@id=\"RecievesNewsLetters\"]").Should().NotBeNull();
+        document.SelectSingleNode("//h2[contains(text(), 'Create Person')]").Should().NotBeNull();
+
         response.EnsureSuccessStatusCode();
 
         // Check for validation error messages in the response
