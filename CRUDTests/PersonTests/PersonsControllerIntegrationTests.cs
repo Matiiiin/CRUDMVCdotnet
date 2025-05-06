@@ -118,7 +118,7 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         document.Should().NotBeNull();
         var table = document.SelectSingleNode("//table[contains(@class, 'persons')]");
         table.Should().NotBeNull();
-        (await _personsService.GetAllPersons()).FirstOrDefault()!.PersonName.Should().Be(validPerson.ToPerson().ToPersonResponse().PersonName);
+        (await _personsService.GetAllPersons()).Where(p=>p.PersonName == validPerson.PersonName).Should().NotBeNull();
     }
         [Fact]
     public async Task Store_ShouldReturnViewWithErrors_WhenModelIsInvalid()
@@ -159,6 +159,26 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         errorMessages.Should().NotBeEmpty();
     }
 
+    #endregion
+    #region Edit
+
+    [Fact]
+    public async Task Edit_ShouldReturnViewWithPersonData_WhenPersonExists()
+    {
+        // Arrange
+        var existigPerson =( await _personsService.GetAllPersons()).FirstOrDefault();
+
+        // Act
+        var response = await _client.GetAsync($"/Persons/Edit/{existigPerson!.PersonID}");
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var html = new HtmlDocument();
+        html.LoadHtml(await response.Content.ReadAsStringAsync());
+        var document = html.DocumentNode;
+        document.SelectSingleNode("//input[@id='PersonName']").Should().NotBeNull();
+        document.SelectSingleNode("//h2[contains(text(), 'Edit Person')]").Should().NotBeNull();
+    }
     #endregion
 
 

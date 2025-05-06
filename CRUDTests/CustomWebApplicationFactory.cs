@@ -29,8 +29,75 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseInMemoryDatabase("DatabaseForTesting");
             });
-        });
+            // Services.GetRequiredService<ApplicationDbContext>().Persons.AddRange(
+            //     new Person()
+            //     {
+            //         PersonID = Guid.Parse("0c97d5dd-5984-436a-a1f2-2fe1f3857a59"),
+            //         PersonName = "Michael Johnson",
+            //         Email = "michael.johnson@example.com",
+            //         DateOfBirth = new DateTime(1985, 3, 12),
+            //         Gender = "Male",
+            //         // CountryID = countries[0].CountryID,
+            //         CountryID = Guid.NewGuid(),
+            //         Address = "123 Maple Street, New York, NY",
+            //         RecievesNewsLetters = true
+            //     }
+                // new Person()
+                // {
+                //     PersonID = Guid.Parse("be245ea5-9e28-4cb4-97c0-290bc619b082"),
+                //     PersonName = "Emily Davis",
+                //     Email = "emily.davis@example.com",
+                //     DateOfBirth = new DateTime(1992, 7, 25),
+                //     Gender = "Female",
+                //     CountryID = countries[4].CountryID,
+                //     Address = "456 Oak Avenue, Los Angeles, CA",
+                //     RecievesNewsLetters = false
+                // },
+            // );
+            var serviceProvider = services.BuildServiceProvider();
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
+                // Add seed data
+                var countries = new List<Country>()
+                {
+                    new() { CountryID = Guid.Parse("4d6681c6-d6d4-4520-8b4b-9ad183ee271c"), CountryName = "Germany" },
+                    new() { CountryID = Guid.Parse("ff642272-7ae8-4a19-98fc-c51b6954ec58"), CountryName = "USA" }
+                };
+                var persons = new List<Person>()
+                {
 
+                    new()
+                    {
+                        PersonID = Guid.Parse("0c97d5dd-5984-436a-a1f2-2fe1f3857a59"),
+                        PersonName = "Michael Johnson",
+                        Email = "michael.johnson@example.com",
+                        DateOfBirth = new DateTime(1985, 3, 12),
+                        Gender = "Male",
+                        CountryID = countries[0].CountryID,
+                        Address = "123 Maple Street, New York, NY",
+                        RecievesNewsLetters = true
+                    },
+                    new()
+                    {
+                        PersonID = Guid.Parse("be245ea5-9e28-4cb4-97c0-290bc619b082"),
+                        PersonName = "Emily Davis",
+                        Email = "emily.davis@example.com",
+                        DateOfBirth = new DateTime(1992, 7, 25),
+                        Gender = "Female",
+                        CountryID = countries[1].CountryID,
+                        Address = "456 Oak Avenue, Los Angeles, CA",
+                        RecievesNewsLetters = false
+                    }
+                };
+                
+                context.Countries.AddRange(countries);
+                context.Persons.AddRange(persons);
+                context.SaveChanges();
+            }
+        });
+        
         builder.UseEnvironment("Testing");
     }
 }
