@@ -271,6 +271,43 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
     table.Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task Update_ShouldReturnViewWithErrors_WhenModelIsInvalid()
+    {
+        // Arrange
+        var existingPerson = (await _personsService.GetAllPersons()).FirstOrDefault();
+        var invalidPersonUpdate = _fixture.Build<PersonUpdateRequest>().With(p=>p.Email , "asdad").With(p=>p.PersonID , existingPerson.PersonID).Create();
+        var editResponse = await _client.GetAsync($"/Persons/Edit/{invalidPersonUpdate.PersonID}");
+        editResponse.EnsureSuccessStatusCode();
+        var editHtml = new HtmlDocument();
+        editHtml.LoadHtml(await editResponse.Content.ReadAsStringAsync());
+        var antiForgeryToken = editHtml.DocumentNode
+            .SelectSingleNode("//input[@name='__RequestVerificationToken']")
+            ?.Attributes["value"]?.Value;
+
+        var formData = new MultipartFormDataContent()
+        {
+            { new StringContent(invalidPersonUpdate.PersonID.ToString()!), "PersonID" },
+            { new StringContent(invalidPersonUpdate.PersonName!), "PersonName" },
+            { new StringContent(invalidPersonUpdate.CountryID.ToString()!), "CountryID" },
+            { new StringContent(invalidPersonUpdate.Email!), "Email" },
+            { new StringContent(invalidPersonUpdate.Address!), "Address" },
+            { new StringContent(invalidPersonUpdate.RecievesNewsLetters.ToString()!), "RecievesNewsLetters" },
+            { new StringContent(invalidPersonUpdate.Gender.ToString()!), "Gender" },
+            { new StringContent(invalidPersonUpdate.DateOfBirth.ToString()!), "DateOfBirth" },
+            { new StringContent(antiForgeryToken!), "__RequestVerificationToken" }
+        };
+        // Act
+        var response = await _client.PostAsync($"/Persons/Update/{invalidPersonUpdate.PersonID}",formData);
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        var html = new HtmlDocument();
+        html.LoadHtml(await response.Content.ReadAsStringAsync());
+        var document = html.DocumentNode;
+        var errorMessages = document.SelectNodes("//span[contains(@class, 'field-validation-error')]");
+        errorMessages.Should().NotBeNullOrEmpty();
+    }
     #endregion
 
 }
