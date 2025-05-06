@@ -309,5 +309,34 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
         errorMessages.Should().NotBeNullOrEmpty();
     }
     #endregion
+    #region Delete
 
+    [Fact]
+    public async Task Delete_ShouldReturnViewWithPersonData_WhenPersonExists()
+    {
+        // Arrange
+        var existingPerson =(await _personsService.GetAllPersons()).FirstOrDefault(); // Replace with an existing person ID
+
+        // Act
+        var response = await _client.GetAsync($"/Persons/Delete?personID={existingPerson!.PersonID}");
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        var html = new HtmlDocument();
+        html.LoadHtml(await response.Content.ReadAsStringAsync());
+        var document = html.DocumentNode;
+        document.SelectSingleNode("//h2[contains(text(), 'Delete Person')]").Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnBadRequest_WhenPersonIDIsInvalid()
+    {
+        // Act
+        var response = await _client.GetAsync("/Persons/Delete?personID=");
+
+        // Assert
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+    }
+
+    #endregion
 }
