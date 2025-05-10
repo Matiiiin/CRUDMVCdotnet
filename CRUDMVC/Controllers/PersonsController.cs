@@ -1,4 +1,6 @@
-﻿using Entities;
+﻿using CRUDMVC.Filters.ActionFilters;
+using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -35,6 +37,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     
     [Route("[action]")]
     [Route("/")]
+    [TypeFilter<PersonsIndexActionFilter>]
     public async Task<IActionResult> Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
     {
         //Search
