@@ -125,9 +125,9 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
 
     [Route("[action]")]
     [HttpGet]
+    [TypeFilter<PersonsDeleteActionFilter>]
     public async Task<IActionResult> Delete([FromQuery] Guid personID)
     {
-        if (personID == Guid.Empty) return BadRequest("Please provide a valid person data");
         var personResponse = await _personsService.GetPersonByPersonID(personID);
         return View(personResponse);
     }
@@ -135,11 +135,9 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [Route("[action]")]
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [TypeFilter<PersonsSubmitDeleteActionFilter>]
     public async Task<IActionResult> SubmitDelete([FromForm] Guid personID)
     {
-        if (personID == Guid.Empty) return BadRequest("Please provide a valid person data");
-        if (await _personsService.GetPersonByPersonID(personID) == null) return NotFound("Person not found");
-        
         await _personsService.DeletePerson(personID);
         return RedirectToAction("Index" , "Persons");
     }
