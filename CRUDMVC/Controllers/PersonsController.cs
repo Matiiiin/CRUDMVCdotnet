@@ -76,9 +76,9 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     
     [Route("[action]")]
     [HttpPost]
+    [TypeFilter<PersonsStoreActionFilter>]
     public async Task<IActionResult> Store([FromForm] PersonAddRequest personAddRequest)
     {
-
         if (!ModelState.IsValid)
         {
             var allCountries = await _countriesService.GetAllCountries();
