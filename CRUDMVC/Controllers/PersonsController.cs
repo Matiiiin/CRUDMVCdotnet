@@ -94,17 +94,13 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
 
     [Route("[action]/{personID:guid}")]
     [HttpGet]
+    [TypeFilter<PersonsEditActionFilter>]
     public async Task<IActionResult> Edit([FromRoute] Guid personID)
     {
-        var personResponse = await _personsService.GetPersonByPersonID(personID);
-        if (personResponse == null)
-        {
-            return NotFound();
-        }
         var allCountries = await _countriesService.GetAllCountries();
         ViewBag.Countries = allCountries
             .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
-        return View(personResponse.ToPersonUpdateRequest());
+        return View((await _personsService.GetPersonByPersonID(personID))?.ToPersonUpdateRequest());
     }
 
     [Route("[action]/{personID:guid}")]
