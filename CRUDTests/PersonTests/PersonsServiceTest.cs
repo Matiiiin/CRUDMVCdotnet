@@ -18,6 +18,7 @@ using ServiceContracts.Enums;
 using Xunit.Abstractions;
 using Moq;
 using RepositoryContracts;
+using Serilog.Extensions.Hosting;
 
 namespace CRUDTests.PersonTests
 {
@@ -32,7 +33,8 @@ namespace CRUDTests.PersonTests
         {
             _testOutputHelper = testOutputHelper;
             _personsRepositoryMock = new Mock<IPersonsRepository>();
-            _personsService = new PersonsService(_personsRepositoryMock.Object);
+            var diagnosticContext = new DiagnosticContext(null);
+            _personsService = new PersonsService(_personsRepositoryMock.Object , diagnosticContext );
             _fixture = new Fixture();
 
         }

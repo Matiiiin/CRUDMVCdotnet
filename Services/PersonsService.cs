@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using RepositoryContracts;
+using Serilog;
 using ServiceContracts.Enums;
 
 namespace Services
 {
-    public class PersonsService(IPersonsRepository _personsRepository) : IPersonsService
+    public class PersonsService(IPersonsRepository _personsRepository , IDiagnosticContext _diagnosticContext) : IPersonsService
     {
         public async Task<PersonResponse> AddPerson(PersonAddRequest? personAddRequest)
         {
@@ -81,6 +82,7 @@ namespace Services
                     matchingPersons = (await _personsRepository.GetAllPersons()).Select(p=>p.ToPersonResponse()).ToList();
                     break;
             }
+            _diagnosticContext.Set("Persons" , matchingPersons);
             return matchingPersons;
 
         }

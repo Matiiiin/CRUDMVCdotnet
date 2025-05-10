@@ -49,7 +49,7 @@ builder.Services.Configure<FormOptions>(options =>
 });
 
 var app = builder.Build();
-
+app.UseSerilogRequestLogging();
 app.UseHttpLogging();
 
 if (builder.Environment.IsDevelopment())
