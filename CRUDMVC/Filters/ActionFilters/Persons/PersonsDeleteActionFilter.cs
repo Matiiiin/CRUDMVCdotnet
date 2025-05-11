@@ -34,6 +34,5 @@ public class PersonsDeleteActionFilter : ActionFilterAttribute
             return;
         }
 
-        await next();
     }
 }

@@ -2,7 +2,7 @@
 
 namespace CRUDMVC.Filters.GlobalFilters;
 
-public class AddCustomHeaderResponseGlobalFilter : IActionFilter
+public class AddCustomHeaderResponseGlobalActionFilter : IActionFilter
 {
     public void OnActionExecuting(ActionExecutingContext context)
     {

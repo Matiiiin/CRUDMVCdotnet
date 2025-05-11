@@ -23,6 +23,5 @@ public class PersonsStoreActionFilter : ActionFilterAttribute
             return;
         }
 
-        await next();
     }
 }

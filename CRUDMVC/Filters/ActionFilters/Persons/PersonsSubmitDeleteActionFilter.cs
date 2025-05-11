@@ -35,6 +35,5 @@ public class PersonsSubmitDeleteActionFilter : ActionFilterAttribute
             return;
         }
 
-        await next();
     }
 }

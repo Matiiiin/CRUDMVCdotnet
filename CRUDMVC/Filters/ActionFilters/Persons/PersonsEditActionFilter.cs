@@ -32,7 +32,6 @@ public class PersonsEditActionFilter : ActionFilterAttribute
             context.Result = new NotFoundResult();
             return;
         }
-        await next(); 
 
     }
 }

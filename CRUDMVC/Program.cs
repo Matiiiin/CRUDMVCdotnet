@@ -26,7 +26,7 @@ builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider services, 
 } );
 builder.Services.AddControllersWithViews(options =>
 {
-    options.Filters.Add<AddCustomHeaderResponseGlobalFilter>();
+    options.Filters.Add<AddCustomHeaderResponseGlobalActionFilter>();
 });
 builder.Services.AddScoped<ICountriesService, CountriesService>();
 builder.Services.AddScoped<IPersonsService, PersonsService>();
