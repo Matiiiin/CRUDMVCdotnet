@@ -1,5 +1,7 @@
 ﻿using CRUDMVC.Filters.ActionFilters.Persons;
+using CRUDMVC.Filters.AuthorizationFilters;
 using CRUDMVC.Filters.ExceptionFilters.Persons;
+using CRUDMVC.Filters.ResultFilters.Persons;
 using Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
@@ -40,6 +42,8 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [Route("/")]
     [TypeFilter<PersonsIndexActionFilter>]
     [TypeFilter<PersonsIndexExceptionFilter>]
+    [TypeFilter<PersonsIndexResultFilter>]
+    // [TypeFilter<AuthCookieCheckAuthorizationFilter>]
     public async Task<IActionResult> Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
     {
         //Search

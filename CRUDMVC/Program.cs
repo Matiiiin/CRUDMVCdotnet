@@ -1,3 +1,4 @@
+using CRUDMVC.Filters.AuthorizationFilters;
 using CRUDMVC.Filters.GlobalFilters;
 using Entities;
 using Microsoft.AspNetCore.Http.Features;
@@ -27,6 +28,7 @@ builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider services, 
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add<AddCustomHeaderResponseGlobalActionFilter>();
+    // options.Filters.Add<AuthTokenCheckAuthorizationFilter>();
 });
 builder.Services.AddScoped<ICountriesService, CountriesService>();
 builder.Services.AddScoped<IPersonsService, PersonsService>();

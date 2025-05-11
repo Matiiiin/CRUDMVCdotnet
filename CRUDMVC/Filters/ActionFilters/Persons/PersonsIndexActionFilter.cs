@@ -15,6 +15,7 @@ public class PersonsIndexActionFilter : ActionFilterAttribute
 
     public override void OnActionExecuting(ActionExecutingContext context)
     {
+        _logger.LogInformation("in {className} , performing {methodName}" ,nameof(PersonsIndexActionFilter) , nameof(OnActionExecuting));
         //Validate if the searchBy parameter is already one of person attributes
         if (context.ActionArguments.ContainsKey("searchBy"))
         {
@@ -34,6 +35,8 @@ public class PersonsIndexActionFilter : ActionFilterAttribute
 
     public override void OnActionExecuted(ActionExecutedContext context)
     {
+        _logger.LogInformation("in {className} , performing {methodName}" ,nameof(PersonsIndexActionFilter) , nameof(OnActionExecuted));
+
         var personsController = context.Controller as PersonsController;
         personsController!.ViewBag.SearchFields = new Dictionary<string, string>()
         {
