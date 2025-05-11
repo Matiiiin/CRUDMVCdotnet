@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using CRUDMVC.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using ServiceContracts.DTO;
 
-namespace CRUDMVC.Filters.ActionFilters;
+namespace CRUDMVC.Filters.ActionFilters.Persons;
 
 public class PersonsIndexActionFilter : ActionFilterAttribute
 {
@@ -27,6 +28,27 @@ public class PersonsIndexActionFilter : ActionFilterAttribute
                 _logger.LogInformation("Replaced searchBy Parameter with: {SearchBy}" , nameof(PersonResponse.PersonName));
             }
         }
+        context.HttpContext.Items["arguments"] = context.ActionArguments;
 
+    }
+
+    public override void OnActionExecuted(ActionExecutedContext context)
+    {
+        var personsController = context.Controller as PersonsController;
+        personsController!.ViewBag.SearchFields = new Dictionary<string, string>()
+        {
+            {nameof(PersonResponse.PersonName) , "Person Name"},
+            {nameof(PersonResponse.Email) , "Email"},
+            {nameof(PersonResponse.DateOfBirth) , "Date Of Birth"},
+            {nameof(PersonResponse.Gender) , "Gender"},
+            {nameof(PersonResponse.Country) , "Country"},
+            {nameof(PersonResponse.Address) , "Address"},
+        };
+        var actionArguments = context.HttpContext.Items["arguments"] as IDictionary<string, object>;
+        personsController.ViewBag.CurrentSearchString = actionArguments != null && actionArguments.TryGetValue("searchString", out var searchString) ? searchString : null;
+        personsController.ViewBag.CurrentSearchBy = actionArguments != null && actionArguments.TryGetValue("searchBy", out var searchBy) ? searchBy : null;
+
+        personsController.ViewBag.CurrentSortBy = actionArguments != null && actionArguments.TryGetValue("sortBy", out var sortBy) ? sortBy : null;
+        personsController.ViewBag.CurrentSortOrder = actionArguments != null && actionArguments.TryGetValue("sortOrder", out var sortOrder) ? sortOrder : null;
     }
 }

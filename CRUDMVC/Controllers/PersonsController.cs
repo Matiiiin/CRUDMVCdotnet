@@ -1,4 +1,4 @@
-﻿using CRUDMVC.Filters.ActionFilters;
+﻿using CRUDMVC.Filters.ActionFilters.Persons;
 using Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
@@ -41,23 +41,9 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     public async Task<IActionResult> Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
     {
         //Search
-        ViewBag.SearchFields = new Dictionary<string, string>()
-        {
-            {nameof(PersonResponse.PersonName) , "Person Name"},
-            {nameof(PersonResponse.Email) , "Email"},
-            {nameof(PersonResponse.DateOfBirth) , "Date Of Birth"},
-            {nameof(PersonResponse.Gender) , "Gender"},
-            {nameof(PersonResponse.Country) , "Country"},
-            {nameof(PersonResponse.Address) , "Address"},
-        };
         var filteredPersons =await _personsService.GetFilteredPersons(searchBy,searchString);
-        ViewBag.CurrentSearchString = searchString;
-        ViewBag.CurrentSearchBy = searchBy;
-        
         
         //Sorting
-        ViewBag.CurrentSortBy = sortBy;
-        ViewBag.CurrentSortOrder = sortOrder;
         var sortedPersons =await _personsService.GetSortedPersons(filteredPersons , sortBy ,sortOrder);
         
         return View(sortedPersons);

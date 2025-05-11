@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.CodeAnalysis.Elfie.Serialization;
 using ServiceContracts.DTO;
 
-namespace CRUDMVC.Filters.ActionFilters;
+namespace CRUDMVC.Filters.ActionFilters.Persons;
 
 public class PersonsStoreActionFilter : ActionFilterAttribute
 {

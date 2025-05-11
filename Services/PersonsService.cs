@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Repositories;
 using RepositoryContracts;
 using Serilog;
@@ -51,7 +52,10 @@ namespace Services
         public async Task<List<PersonResponse>> GetFilteredPersons(string? searchBy, string? searchString)
         {
             List<PersonResponse> matchingPersons = new(){};
-
+            if (searchString.IsNullOrEmpty())
+            {
+                return (await _personsRepository.GetAllPersons()).Select(p => p.ToPersonResponse()).ToList();
+            }
             switch (searchBy)
             {
                 case nameof(PersonResponse.PersonName):

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using ServiceContracts;
 
-namespace CRUDMVC.Filters.ActionFilters;
+namespace CRUDMVC.Filters.ActionFilters.Persons;
 
 public class PersonsEditActionFilter : ActionFilterAttribute
 {
