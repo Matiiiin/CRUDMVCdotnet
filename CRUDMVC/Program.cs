@@ -18,6 +18,10 @@ var builder = WebApplication.CreateBuilder(args);
 //     .WriteTo.Console() // Log to console
 //     .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day) // Log to file
 //     .CreateLogger();
+builder.Services.AddExceptionHandler(options =>
+{
+    options.ExceptionHandlingPath = "/Error";
+});
 
 builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider services, LoggerConfiguration loggerConfiguration) => {
 
@@ -63,6 +67,7 @@ if (builder.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+// app.UseExceptionHandler();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapControllers();

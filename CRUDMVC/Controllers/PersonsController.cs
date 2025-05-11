@@ -23,8 +23,8 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
 
     #region FileUpload test Action
 
-    [Route("[action]")]
-    public async Task TestLog([FromServices]ILogger<PersonsController> logger)
+    [Route("/[action]")]
+    public async Task<IActionResult> Error([FromServices]ILogger<PersonsController> logger)
     {
         
         logger.LogInformation("Test Log");
@@ -34,7 +34,9 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
         logger.LogTrace("test Trace");
         logger.LogDebug("test Debug");
         logger.Log(LogLevel.None,"test ");
-        
+        return Content("Something went wrong");
+        // var error = new Dictionary<string, object>() { { "error", "Something went wrong" }, { "details", HttpContext.User.Identity.Name } };
+        // return Json(error);
     }
     #endregion
     
