@@ -1,3 +1,4 @@
+using CRUDMVC.Filters.ActionFilters.Persons;
 using CRUDMVC.Filters.AuthorizationFilters;
 using CRUDMVC.Filters.GlobalFilters;
 using Entities;
@@ -38,6 +39,7 @@ builder.Services.AddScoped<ICountriesService, CountriesService>();
 builder.Services.AddScoped<IPersonsService, PersonsService>();
 builder.Services.AddScoped<ICountriesRepository, CountriesRepository>();
 builder.Services.AddScoped<IPersonsRepository, PersonsRepository>();
+builder.Services.AddTransient<PersonsIndexCustomResponseHeaderActionFilter>();
 
 builder.Services.AddHttpLogging(options =>
 {
