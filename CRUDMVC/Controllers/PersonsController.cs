@@ -45,6 +45,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [TypeFilter<PersonsIndexActionFilter>]
     [TypeFilter<PersonsIndexExceptionFilter>]
     [TypeFilter<PersonsIndexResultFilter>]
+    [TypeFilter<PersonsIndexAlwaysRunResultFilter>]
     // [TypeFilter<AuthCookieCheckAuthorizationFilter>]
     public async Task<IActionResult> Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
     {
