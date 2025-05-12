@@ -27,16 +27,16 @@ builder.Services.ConfigureServices(configuration:builder.Configuration , webHost
 
 
 var app = builder.Build();
-// app.UseExceptionHandler();
-app.UseSerilogRequestLogging();
 if (builder.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseCustomExceptionHandlingMiddleware();
+    // app.UseCustomExceptionHandlingMiddleware();
+    app.UseExceptionHandler();
 }
+app.UseSerilogRequestLogging();
 app.UseHttpLogging();
 app.UseStaticFiles();
 app.UseRouting();

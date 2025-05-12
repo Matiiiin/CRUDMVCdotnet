@@ -16,10 +16,11 @@ public static class ConfigureServicesExtention
 {
    public static IServiceCollection ConfigureServices(this IServiceCollection services , IConfiguration configuration , IWebHostEnvironment webHostEnvironment)
    {
-      // services.AddExceptionHandler(options =>
-      // {
-      //    options.ExceptionHandlingPath = "/Error";
-      // });
+      services.AddExceptionHandler(options =>
+      {
+         options.ExceptionHandlingPath = "/Error";
+         options.StatusCodeSelector = (e) => 500;
+      });
 
 
       services.AddControllersWithViews(options =>

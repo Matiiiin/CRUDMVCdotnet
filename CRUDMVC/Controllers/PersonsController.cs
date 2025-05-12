@@ -4,6 +4,7 @@ using CRUDMVC.Filters.ExceptionFilters.Persons;
 using CRUDMVC.Filters.ResultFilters.Persons;
 using Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -34,9 +35,9 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
         logger.LogTrace("test Trace");
         logger.LogDebug("test Debug");
         logger.Log(LogLevel.None,"test ");
-        return Content("Something went wrong");
-        // var error = new Dictionary<string, object>() { { "error", "Something went wrong" }, { "details", HttpContext.User.Identity.Name } };
-        // return Json(error);
+        var response = new Dictionary<string, object>()
+            { { "error", HttpContext.Features.Get<IExceptionHandlerPathFeature>().Error.Message } };
+        return Json(response);
     }
     #endregion
     
