@@ -1,6 +1,7 @@
 using CRUDMVC.Filters.ActionFilters.Persons;
 using CRUDMVC.Filters.AuthorizationFilters;
 using CRUDMVC.Filters.GlobalFilters;
+using CRUDMVC.Middlewares;
 using CRUDMVC.StartupExtensions;
 using Entities;
 using Microsoft.AspNetCore.Http.Features;
@@ -26,15 +27,17 @@ builder.Services.ConfigureServices(configuration:builder.Configuration , webHost
 
 
 var app = builder.Build();
+// app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
-app.UseHttpLogging();
-
 if (builder.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
-
-// app.UseExceptionHandler();
+else
+{
+    app.UseCustomExceptionHandlingMiddleware();
+}
+app.UseHttpLogging();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapControllers();

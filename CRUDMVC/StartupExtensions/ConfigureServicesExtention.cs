@@ -1,5 +1,6 @@
 ﻿using CRUDMVC.Filters.ActionFilters.Persons;
 using CRUDMVC.Filters.GlobalFilters;
+using CRUDMVC.Middlewares;
 using Entities;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpLogging;
@@ -15,10 +16,10 @@ public static class ConfigureServicesExtention
 {
    public static IServiceCollection ConfigureServices(this IServiceCollection services , IConfiguration configuration , IWebHostEnvironment webHostEnvironment)
    {
-      services.AddExceptionHandler(options =>
-      {
-         options.ExceptionHandlingPath = "/Error";
-      });
+      // services.AddExceptionHandler(options =>
+      // {
+      //    options.ExceptionHandlingPath = "/Error";
+      // });
 
 
       services.AddControllersWithViews(options =>
