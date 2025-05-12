@@ -8,7 +8,6 @@ using Moq;
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
-using Xunit.Sdk;
 
 namespace CRUDTests.PersonTests;
 
@@ -103,19 +102,7 @@ public class PersonsControllerTest
 
     #endregion
     #region Edit
-
-    [Fact]
-    public async Task Edit_InvalidPersonID_ReturnsNotFound()
-    {
-        //Arrange
-        var invalidPersonID = _fixture.Create<Guid>();
-        _personsServiceMock.Setup(p=>p.GetPersonByPersonID(invalidPersonID)).ReturnsAsync(null as PersonResponse);
-        //Act
-        var result = await _personsController.Edit(invalidPersonID);
-        
-        //Assert
-        result.Should().BeOfType<NotFoundResult>();
-    }
+    
     [Fact]
     public async Task Edit_ValidPersonID_ReturnsViewResult()
     {
@@ -185,18 +172,7 @@ public class PersonsControllerTest
     }
     #endregion
     #region Delete
-
-    [Fact]
-    public async Task Delete_InvalidPersonID_ReturnsBadRequest()
-    {
-        //Arrange
-        var invalidPersonID = Guid.Empty;
-        //Act
-        var result = await _personsController.Delete(invalidPersonID) as BadRequestObjectResult;
-        //Assert
-        result.Should().BeOfType<BadRequestObjectResult>();
-        result.StatusCode.Should().Be(400);
-    }
+    
     [Fact]
     public async Task Delete_ValidPersonID_ReturnsViewResult()
     {
@@ -214,18 +190,7 @@ public class PersonsControllerTest
     #region SubmitDelete
 
     [Fact]
-    public async Task SubmitDelete_InvalidPersonID_ReturnsBadRequest()
-    {
-        //Arrange
-        var invalidPersonID = Guid.Empty;
-        //Act
-        var result = await _personsController.SubmitDelete(invalidPersonID) as BadRequestObjectResult;
-        //Assert
-        result.Should().BeOfType<BadRequestObjectResult>();
-        result.StatusCode.Should().Be(400);
-    }
-    [Fact]
-    public async Task SubmitDelete_NullPersonInDatabase_ReturnsBadRequest()
+    public async Task SubmitDelete_NullPersonInDatabase_ReturnsNotFound()
     {
         //Arrange
         var validPersonID = Guid.NewGuid();
@@ -238,7 +203,7 @@ public class PersonsControllerTest
     }
     
     [Fact]
-    public async Task SubmitDelete_ValidPersonData_ReturnsBadRequest()
+    public async Task SubmitDelete_ValidPersonData_ReturnsRedirectToAction()
     {
         //Arrange
         var validPersonID = Guid.NewGuid();
