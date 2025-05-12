@@ -22,6 +22,10 @@ public class PersonsStoreActionFilter : ActionFilterAttribute
             context.Result = new BadRequestObjectResult("No Person Add data is provided");
             return;
         }
+        else
+        {
+            await next();
+        }
 
     }
 }

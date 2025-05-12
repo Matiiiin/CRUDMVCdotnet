@@ -25,12 +25,15 @@ public class PersonsEditActionFilter : ActionFilterAttribute
             return;
         }
 
-        var personResponse = await _personsService.GetPersonByPersonID(personID);
-        if (personResponse == null)
+        else if (await _personsService.GetPersonByPersonID(personID) == null)
         {
             _logger.LogInformation("Person with personID : {personID} not found" , personID);
             context.Result = new NotFoundResult();
             return;
+        }
+        else
+        {
+            await next();
         }
 
     }

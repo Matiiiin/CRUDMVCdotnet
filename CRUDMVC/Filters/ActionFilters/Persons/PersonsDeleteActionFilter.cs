@@ -25,13 +25,15 @@ public class PersonsDeleteActionFilter : ActionFilterAttribute
             context.Result = new BadRequestObjectResult("Invalid or missing personID.");
             return;
         }
-
-        var personResponse = await _personsService.GetPersonByPersonID(personID);
-        if (personResponse == null)
+        else if (await _personsService.GetPersonByPersonID(personID) == null)
         {
             _logger.LogWarning("Person with personID: {personID} not found.", personID);
             context.Result = new NotFoundObjectResult("Person not found.");
             return;
+        }
+        else
+        {
+            await next();
         }
 
     }

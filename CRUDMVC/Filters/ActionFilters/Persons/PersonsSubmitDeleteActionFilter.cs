@@ -27,12 +27,15 @@ public class PersonsSubmitDeleteActionFilter : ActionFilterAttribute
             return;
         }
 
-        var personResponse = await _personsService.GetPersonByPersonID(personID);
-        if (personResponse == null)
+        else if (await _personsService.GetPersonByPersonID(personID) == null)
         {
             _logger.LogWarning("Person with personID: {personID} not found.", personID);
             context.Result = new NotFoundObjectResult("Person not found.");
             return;
+        }
+        else
+        {
+            await next();
         }
 
     }
