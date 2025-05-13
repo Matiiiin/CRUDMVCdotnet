@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceContracts;
+using ServiceContracts.Persons;
 using Services;
+using Services.Persons;
 
 namespace CRUDTests;
 
@@ -72,7 +74,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 context.SaveChanges();
             }
 
-            services.AddSingleton<IPersonsService, PersonsService>();
+            services.AddSingleton<IPersonsGetterService, PersonsGetterService>();
+            services.AddSingleton<IPersonsUpdaterService,PersonsUpdaterService>();
         });
         
         builder.UseEnvironment("Testing");

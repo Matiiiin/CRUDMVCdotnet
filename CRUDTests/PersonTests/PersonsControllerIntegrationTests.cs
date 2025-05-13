@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
+using ServiceContracts.Persons;
 using Services;
 
 namespace CRUDTests.PersonTests;
@@ -20,12 +21,12 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly IFixture _fixture;
-    private readonly IPersonsService _personsService;
+    private readonly IPersonsGetterService _personsGetterService;
 
     public PersonsControllerIntegrationTests(CustomWebApplicationFactory factory , ITestOutputHelper testOutputHelper)
     {
+        _personsGetterService = factory.Services.GetRequiredService<IPersonsGetterService>();
         _testOutputHelper = testOutputHelper;
-        _personsService = factory.Services.GetRequiredService<IPersonsService>();
         _fixture = new Fixture();
         _client = factory.CreateClient();
         _client.BaseAddress = new Uri("http://localhost:5114");
@@ -124,7 +125,7 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
         document.SelectSingleNode("//h1[contains(text(), 'Persons')]").Should().NotBeNull();
 
         table.Should().NotBeNull();
-        (await _personsService.GetAllPersons()).Where(p=>p.PersonName == validPerson.PersonName).Should().NotBeNull();
+        (await _personsGetterService.GetAllPersons()).Where(p=>p.PersonName == validPerson.PersonName).Should().NotBeNull();
     }
         [Fact]
     public async Task Store_ShouldReturnViewWithErrors_WhenModelIsInvalid()
@@ -174,7 +175,7 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
     public async Task Edit_ShouldReturnViewWithPersonData_WhenPersonExists()
     {
         // Arrange
-        var existigPerson =( await _personsService.GetAllPersons()).FirstOrDefault();
+        var existigPerson =( await _personsGetterService.GetAllPersons()).FirstOrDefault();
 
         // Act
         var response = await _client.GetAsync($"/Persons/Edit/{existigPerson!.PersonID}");
@@ -213,7 +214,7 @@ public class PersonsControllerIntegrationTests : IClassFixture<CustomWebApplicat
 public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
 {
     // Arrange
-    var existingPerson = (await _personsService.GetAllPersons()).FirstOrDefault();
+    var existingPerson = (await _personsGetterService.GetAllPersons()).FirstOrDefault();
     var validPersonUpdate = new
     {
         PersonID = existingPerson!.PersonID,
@@ -253,7 +254,7 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
     // Assert
     response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
 
-    var updatedPerson = await _personsService.GetPersonByPersonID(validPersonUpdate.PersonID);
+    var updatedPerson = await _personsGetterService.GetPersonByPersonID(validPersonUpdate.PersonID);
     updatedPerson.Should().NotBeNull();
     updatedPerson!.PersonName.Should().Be(validPersonUpdate.PersonName);
     updatedPerson.Email.Should().Be(validPersonUpdate.Email);
@@ -275,7 +276,7 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
     public async Task Update_ShouldReturnViewWithErrors_WhenModelIsInvalid()
     {
         // Arrange
-        var existingPerson = (await _personsService.GetAllPersons()).FirstOrDefault();
+        var existingPerson = (await _personsGetterService.GetAllPersons()).FirstOrDefault();
         var invalidPersonUpdate = _fixture.Build<PersonUpdateRequest>().With(p=>p.Email , "asdad").With(p=>p.PersonID , existingPerson.PersonID).Create();
         var editResponse = await _client.GetAsync($"/Persons/Edit/{invalidPersonUpdate.PersonID}");
         editResponse.EnsureSuccessStatusCode();
@@ -315,7 +316,7 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
     public async Task Delete_ShouldReturnViewWithPersonData_WhenPersonExists()
     {
         // Arrange
-        var existingPerson =(await _personsService.GetAllPersons()).FirstOrDefault(); // Replace with an existing person ID
+        var existingPerson =(await _personsGetterService.GetAllPersons()).FirstOrDefault(); // Replace with an existing person ID
 
         // Act
         var response = await _client.GetAsync($"/Persons/Delete?personID={existingPerson!.PersonID}");
@@ -347,7 +348,7 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
     public async Task SubmitDelete_ShouldRedirectToIndex_WhenPersonExists()
     {
         // Arrange
-        var existingPerson =(await _personsService.GetAllPersons()).FirstOrDefault();
+        var existingPerson =(await _personsGetterService.GetAllPersons()).FirstOrDefault();
         var editResponse = await _client.GetAsync($"/Persons/Edit/{existingPerson!.PersonID}");
         editResponse.EnsureSuccessStatusCode();
         var editHtml = new HtmlDocument();
@@ -365,7 +366,7 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
         var response = await _client.PostAsync("/Persons/SubmitDelete", formData);
 
         // Assert
-        var allPersons = await _personsService.GetAllPersons();
+        var allPersons = await _personsGetterService.GetAllPersons();
         allPersons.Should().NotContain(existingPerson);
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         var html = new HtmlDocument();
@@ -382,7 +383,7 @@ public async Task Update_ShouldRedirectToIndex_WhenModelIsValid()
     {
         // Arrange
         var nonExistentPersonID = Guid.NewGuid();
-        var existingPerson =(await _personsService.GetAllPersons()).FirstOrDefault();
+        var existingPerson =(await _personsGetterService.GetAllPersons()).FirstOrDefault();
         var editResponse = await _client.GetAsync($"/Persons/Edit/{existingPerson!.PersonID}");
         editResponse.EnsureSuccessStatusCode();
         var editHtml = new HtmlDocument();

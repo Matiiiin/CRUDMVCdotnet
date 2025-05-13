@@ -13,13 +13,18 @@ using Microsoft.Extensions.Options;
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
+using ServiceContracts.Persons;
 
 namespace CRUDMVC.Controllers;
 
 [Route("[controller]")]
-public class PersonsController(IPersonsService personsService , ICountriesService countriesService)  : Controller
+public class PersonsController(IPersonsGetterService personsGetterService , IPersonsAdderService personsAdderService, IPersonsSorterService personsSorterService, IPersonsDeleterService personsDeleterService, IPersonsUpdaterService personsUpdaterService, ICountriesService countriesService)  : Controller
 {
-    private readonly IPersonsService _personsService = personsService;
+    private readonly IPersonsGetterService _personsGetterService = personsGetterService;
+    private readonly IPersonsAdderService _personsAdderService = personsAdderService;
+    private readonly IPersonsSorterService _personsSorterService = personsSorterService;
+    private readonly IPersonsDeleterService _personsDeleterService = personsDeleterService;
+    private readonly IPersonsUpdaterService _personsUpdaterService = personsUpdaterService;
     private readonly ICountriesService _countriesService = countriesService;
 
     #region FileUpload test Action
@@ -52,10 +57,10 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     public async Task<IActionResult> Index(string? searchString , string? searchBy , string sortBy = nameof(PersonResponse.PersonName) , SortOrderOptions sortOrder = SortOrderOptions.ASC)
     {
         //Search
-        var filteredPersons =await _personsService.GetFilteredPersons(searchBy,searchString);
+        var filteredPersons =await _personsGetterService.GetFilteredPersons(searchBy,searchString);
         
         //Sorting
-        var sortedPersons =await _personsService.GetSortedPersons(filteredPersons , sortBy ,sortOrder);
+        var sortedPersons =await _personsSorterService.GetSortedPersons(filteredPersons , sortBy ,sortOrder);
         
         return View(sortedPersons);
     }
@@ -85,7 +90,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
             return View("Create");
         }
 
-        await _personsService.AddPerson(personAddRequest);
+        await _personsAdderService.AddPerson(personAddRequest);
         return RedirectToAction("Index" , "Persons");
     }
 
@@ -97,7 +102,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
         var allCountries = await _countriesService.GetAllCountries();
         ViewBag.Countries = allCountries
             .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
-        return View((await _personsService.GetPersonByPersonID(personID))?.ToPersonUpdateRequest());
+        return View((await _personsGetterService.GetPersonByPersonID(personID))?.ToPersonUpdateRequest());
     }
 
     [Route("[action]/{personID:guid}")]
@@ -112,11 +117,11 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
             ViewBag.Countries = allCountries
                 .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
             ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-            var personResponse = await _personsService.GetPersonByPersonID(personUpdateRequest.PersonID);
+            var personResponse = await _personsGetterService.GetPersonByPersonID(personUpdateRequest.PersonID);
             return View("Edit" , personResponse?.ToPersonUpdateRequest()); 
         }
         // personUpdateRequest.PersonID = personID;
-        await _personsService.UpdatePerson(personUpdateRequest);
+        await _personsUpdaterService.UpdatePerson(personUpdateRequest);
         return RedirectToAction("Index" , "Persons");
     }
 
@@ -125,7 +130,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [TypeFilter<PersonsDeleteActionFilter>]
     public async Task<IActionResult> Delete([FromQuery] Guid personID)
     {
-        var personResponse = await _personsService.GetPersonByPersonID(personID);
+        var personResponse = await _personsGetterService.GetPersonByPersonID(personID);
         return View(personResponse);
     }
     
@@ -135,7 +140,7 @@ public class PersonsController(IPersonsService personsService , ICountriesServic
     [TypeFilter<PersonsSubmitDeleteActionFilter>]
     public async Task<IActionResult> SubmitDelete([FromForm] Guid personID)
     {
-        await _personsService.DeletePerson(personID);
+        await _personsDeleterService.DeletePerson(personID);
         return RedirectToAction("Index" , "Persons");
     }
 }

@@ -5,15 +5,22 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Moq;
+using Mysqlx.Crud;
 using ServiceContracts;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
+using ServiceContracts.Persons;
 
 namespace CRUDTests.PersonTests;
 
 public class PersonsControllerTest
 {
-    private readonly Mock<IPersonsService> _personsServiceMock;
+    private readonly Mock<IPersonsGetterService> _personsGetterServiceMock;
+    private readonly Mock<IPersonsAdderService> _personsAdderServiceMock;
+    private readonly Mock<IPersonsSorterService> _personsSorterServiceMock;
+    private readonly Mock<IPersonsUpdaterService> _personsUpdaterServiceMock;
+    private readonly Mock<IPersonsDeleterService> _personsDeleterServiceMock;
+    
     private readonly Mock<ICountriesService> _countriesServiceMock;
     private readonly PersonsController _personsController;
     private readonly IFixture _fixture;
@@ -22,8 +29,18 @@ public class PersonsControllerTest
     {
         _fixture = new Fixture();
         _countriesServiceMock = new Mock<ICountriesService>();
-        _personsServiceMock = new Mock<IPersonsService>();
-        _personsController = new PersonsController(_personsServiceMock.Object ,_countriesServiceMock.Object);
+        _personsGetterServiceMock = new Mock<IPersonsGetterService>();
+        _personsAdderServiceMock = new Mock<IPersonsAdderService>();
+        _personsSorterServiceMock = new Mock<IPersonsSorterService>();
+        _personsUpdaterServiceMock = new Mock<IPersonsUpdaterService>();
+        _personsDeleterServiceMock = new Mock<IPersonsDeleterService>();
+        _personsController = new PersonsController(
+            _personsGetterServiceMock.Object ,
+            _personsAdderServiceMock.Object ,
+            _personsSorterServiceMock.Object ,
+            _personsDeleterServiceMock.Object ,
+            _personsUpdaterServiceMock.Object ,
+            _countriesServiceMock.Object);
     }
     #region Index
         [Fact]
@@ -35,8 +52,8 @@ public class PersonsControllerTest
             var sortBy = _fixture.Create<string>();
             var orderBy = _fixture.Create<SortOrderOptions>();
             var personsResponsesList = _fixture.Create<List<PersonResponse>>();
-            _personsServiceMock.Setup(s => s.GetFilteredPersons(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(personsResponsesList);        
-            _personsServiceMock.Setup(s=>s.GetSortedPersons(It.IsAny<List<PersonResponse>>() ,It.IsAny<string>(), It.IsAny<SortOrderOptions>())).ReturnsAsync(personsResponsesList);
+            _personsGetterServiceMock.Setup(s => s.GetFilteredPersons(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(personsResponsesList);        
+            _personsSorterServiceMock.Setup(s=>s.GetSortedPersons(It.IsAny<List<PersonResponse>>() ,It.IsAny<string>(), It.IsAny<SortOrderOptions>())).ReturnsAsync(personsResponsesList);
             //Act
             var result = await _personsController.Index(searchString, searchBy ,sortBy, orderBy );
             
@@ -89,7 +106,7 @@ public class PersonsControllerTest
     {
         //Arrange
         var validPersonAddRequest = _fixture.Create<PersonAddRequest>();
-        _personsServiceMock.Setup(p => p.AddPerson(It.IsAny<PersonAddRequest>()))
+        _personsAdderServiceMock.Setup(p => p.AddPerson(It.IsAny<PersonAddRequest>()))
             .ReturnsAsync(validPersonAddRequest.ToPerson().ToPersonResponse());
         //Act
         var result = await _personsController.Store(validPersonAddRequest);
@@ -110,7 +127,7 @@ public class PersonsControllerTest
         var person = _fixture.Build<Person>().With(p=> p.Gender , PersonGenderEnum.Male.ToString()).Create();
         var validPersonID =person.PersonID;
         var countries = _fixture.Create<List<CountryResponse>>();
-        _personsServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(person.ToPersonResponse());
+        _personsGetterServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(person.ToPersonResponse());
         _countriesServiceMock.Setup(s => s.GetAllCountries()).ReturnsAsync(countries);
         //Act
         var result = await _personsController.Edit(validPersonID);
@@ -143,7 +160,7 @@ public class PersonsControllerTest
         var person = _fixture.Build<Person>().With(p=>p.Gender , PersonGenderEnum.Male.ToString()).Create();
         _personsController.ModelState.AddModelError("PersonEmail", "Person email is required");
         var countries = _fixture.Create<List<CountryResponse>>();
-        _personsServiceMock.Setup(p=>p.GetPersonByPersonID(It.IsAny<Guid>())).ReturnsAsync(person.ToPersonResponse());
+        _personsGetterServiceMock.Setup(p=>p.GetPersonByPersonID(It.IsAny<Guid>())).ReturnsAsync(person.ToPersonResponse());
         _countriesServiceMock.Setup(c=>c.GetAllCountries()).ReturnsAsync(countries);
         
         //Act
@@ -161,7 +178,7 @@ public class PersonsControllerTest
         //Arrange
         PersonUpdateRequest? personUpdateRequest = _fixture.Build<PersonUpdateRequest>().With(request=>request.Gender , PersonGenderEnum.Female).Create();
         var person = _fixture.Build<Person>().With(p=>p.Gender , PersonGenderEnum.Male.ToString()).Create();
-        _personsServiceMock.Setup(p=>p.UpdatePerson(personUpdateRequest)).ReturnsAsync(person.ToPersonResponse());        
+        _personsUpdaterServiceMock.Setup(p=>p.UpdatePerson(personUpdateRequest)).ReturnsAsync(person.ToPersonResponse());        
         //Act
         var result =(RedirectToActionResult) await _personsController.Update(personUpdateRequest, person.PersonID);
         
@@ -179,7 +196,7 @@ public class PersonsControllerTest
         //Arrange
         var validPersonID = Guid.NewGuid();
         var person = _fixture.Build<Person>().With(p=>p.Gender , PersonGenderEnum.Female.ToString()).With(p=>p.PersonID , validPersonID).Create();
-        _personsServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(person.ToPersonResponse());
+        _personsGetterServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(person.ToPersonResponse());
         //Act
         var result = await _personsController.Delete(validPersonID) as ViewResult;
         //Assert
@@ -194,7 +211,7 @@ public class PersonsControllerTest
     {
         //Arrange
         var validPersonID = Guid.NewGuid();
-        _personsServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(null as PersonResponse);
+        _personsGetterServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(null as PersonResponse);
         
         //Act
         var result = await _personsController.SubmitDelete(validPersonID) as NotFoundResult;
@@ -208,8 +225,8 @@ public class PersonsControllerTest
         //Arrange
         var validPersonID = Guid.NewGuid();
         var person = _fixture.Build<Person>().With(p=>p.Gender , PersonGenderEnum.Female.ToString()).With(p=>p.PersonID , validPersonID).Create();
-        _personsServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(person.ToPersonResponse());
-        _personsServiceMock.Setup(p=>p.DeletePerson(validPersonID)).ReturnsAsync(true);
+        _personsGetterServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(person.ToPersonResponse());
+        _personsDeleterServiceMock.Setup(p=>p.DeletePerson(validPersonID)).ReturnsAsync(true);
         
         //Act
         var result = await _personsController.SubmitDelete(validPersonID) as RedirectToActionResult;

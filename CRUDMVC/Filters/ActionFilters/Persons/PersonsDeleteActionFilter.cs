@@ -1,18 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ServiceContracts;
+using ServiceContracts.Persons;
 
 namespace CRUDMVC.Filters.ActionFilters.Persons;
 
 public class PersonsDeleteActionFilter : ActionFilterAttribute
 {
     private readonly ILogger<PersonsDeleteActionFilter> _logger;
-    private readonly IPersonsService _personsService;
+    private readonly IPersonsGetterService _personsGetterService;
 
-    public PersonsDeleteActionFilter(ILogger<PersonsDeleteActionFilter> logger, IPersonsService personsService)
+    public PersonsDeleteActionFilter(ILogger<PersonsDeleteActionFilter> logger, IPersonsGetterService personsGetterService)
     {
         _logger = logger;
-        _personsService = personsService;
+        _personsGetterService = personsGetterService;
     }
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -25,7 +26,7 @@ public class PersonsDeleteActionFilter : ActionFilterAttribute
             context.Result = new BadRequestObjectResult("Invalid or missing personID.");
             return;
         }
-        else if (await _personsService.GetPersonByPersonID(personID) == null)
+        else if (await _personsGetterService.GetPersonByPersonID(personID) == null)
         {
             _logger.LogWarning("Person with personID: {personID} not found.", personID);
             context.Result = new NotFoundObjectResult("Person not found.");

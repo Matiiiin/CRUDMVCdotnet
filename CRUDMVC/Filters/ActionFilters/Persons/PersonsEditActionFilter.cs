@@ -1,18 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using ServiceContracts;
+using ServiceContracts.Persons;
 
 namespace CRUDMVC.Filters.ActionFilters.Persons;
 
 public class PersonsEditActionFilter : ActionFilterAttribute
 {
     private readonly ILogger<PersonsEditActionFilter> _logger;
-    private readonly IPersonsService _personsService;
+    private readonly IPersonsGetterService _personsGetterService;
 
-    public PersonsEditActionFilter(ILogger<PersonsEditActionFilter> logger, IPersonsService personsService)
+    public PersonsEditActionFilter(ILogger<PersonsEditActionFilter> logger, IPersonsGetterService personsGetterService)
     {
         _logger = logger;
-        _personsService = personsService;
+        _personsGetterService = personsGetterService;
     }
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -25,7 +26,7 @@ public class PersonsEditActionFilter : ActionFilterAttribute
             return;
         }
 
-        else if (await _personsService.GetPersonByPersonID(personID) == null)
+        else if (await _personsGetterService.GetPersonByPersonID(personID) == null)
         {
             _logger.LogInformation("Person with personID : {personID} not found" , personID);
             context.Result = new NotFoundResult();

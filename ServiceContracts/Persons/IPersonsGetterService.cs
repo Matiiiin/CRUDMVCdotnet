@@ -6,17 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceContracts.Enums;
 
-namespace ServiceContracts
+namespace ServiceContracts.Persons
 {
-    public interface IPersonsService
+    public interface IPersonsGetterService
     {
         Task<List<PersonResponse>> GetAllPersons();
-        Task<PersonResponse> AddPerson(PersonAddRequest? personAddRequest);
         Task<PersonResponse?> GetPersonByPersonID(Guid? personID);
         Task<List<PersonResponse>> GetFilteredPersons(string? searchBy, string? searchString);
-        Task<List<PersonResponse>> GetSortedPersons(List<PersonResponse> persons , string sortBy, SortOrderOptions sortOrder);
-        Task<PersonResponse> UpdatePerson(PersonUpdateRequest? personUpdateRequest);
-        Task<bool> DeletePerson(Guid? personID);
     }
 
 }
