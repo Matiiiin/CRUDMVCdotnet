@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Moq;
 using Mysqlx.Crud;
 using ServiceContracts;
+using ServiceContracts.Countries;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
 using ServiceContracts.Persons;
@@ -21,14 +22,17 @@ public class PersonsControllerTest
     private readonly Mock<IPersonsUpdaterService> _personsUpdaterServiceMock;
     private readonly Mock<IPersonsDeleterService> _personsDeleterServiceMock;
     
-    private readonly Mock<ICountriesService> _countriesServiceMock;
+    private readonly Mock<ICountriesAdderService> _countriesAdderServiceMock;
+    private readonly Mock<ICountriesGetterService> _countriesGetterServiceMock;
     private readonly PersonsController _personsController;
     private readonly IFixture _fixture;
 
     public PersonsControllerTest()
     {
         _fixture = new Fixture();
-        _countriesServiceMock = new Mock<ICountriesService>();
+        _countriesGetterServiceMock = new Mock<ICountriesGetterService>();
+        _countriesAdderServiceMock = new Mock<ICountriesAdderService>();
+        
         _personsGetterServiceMock = new Mock<IPersonsGetterService>();
         _personsAdderServiceMock = new Mock<IPersonsAdderService>();
         _personsSorterServiceMock = new Mock<IPersonsSorterService>();
@@ -40,7 +44,9 @@ public class PersonsControllerTest
             _personsSorterServiceMock.Object ,
             _personsDeleterServiceMock.Object ,
             _personsUpdaterServiceMock.Object ,
-            _countriesServiceMock.Object);
+            _countriesAdderServiceMock.Object,
+            _countriesGetterServiceMock.Object
+            );
     }
     #region Index
         [Fact]
@@ -74,7 +80,7 @@ public class PersonsControllerTest
         {
             //Arrange
             var countriesResponses = _fixture.Create<List<CountryResponse>>();
-            _countriesServiceMock.Setup(s => s.GetAllCountries()).ReturnsAsync(countriesResponses);
+            _countriesGetterServiceMock.Setup(s => s.GetAllCountries()).ReturnsAsync(countriesResponses);
             //Act
             var result = await _personsController.Create();
             //Assert
@@ -91,7 +97,7 @@ public class PersonsControllerTest
         var countries = _fixture.Create<List<CountryResponse>>();
         var invalidPersonAddRequest = _fixture.Build<PersonAddRequest>().Without(p => p.PersonName).Create();
         _personsController.ModelState.AddModelError("PersonName", "Person name is Required");        
-        _countriesServiceMock.Setup(s => s.GetAllCountries()).ReturnsAsync(countries);
+        _countriesGetterServiceMock.Setup(s => s.GetAllCountries()).ReturnsAsync(countries);
         //Act
         var result = await _personsController.Store(invalidPersonAddRequest);
         
@@ -128,7 +134,7 @@ public class PersonsControllerTest
         var validPersonID =person.PersonID;
         var countries = _fixture.Create<List<CountryResponse>>();
         _personsGetterServiceMock.Setup(p=>p.GetPersonByPersonID(validPersonID)).ReturnsAsync(person.ToPersonResponse());
-        _countriesServiceMock.Setup(s => s.GetAllCountries()).ReturnsAsync(countries);
+        _countriesGetterServiceMock.Setup(s => s.GetAllCountries()).ReturnsAsync(countries);
         //Act
         var result = await _personsController.Edit(validPersonID);
         
@@ -161,7 +167,7 @@ public class PersonsControllerTest
         _personsController.ModelState.AddModelError("PersonEmail", "Person email is required");
         var countries = _fixture.Create<List<CountryResponse>>();
         _personsGetterServiceMock.Setup(p=>p.GetPersonByPersonID(It.IsAny<Guid>())).ReturnsAsync(person.ToPersonResponse());
-        _countriesServiceMock.Setup(c=>c.GetAllCountries()).ReturnsAsync(countries);
+        _countriesGetterServiceMock.Setup(c=>c.GetAllCountries()).ReturnsAsync(countries);
         
         //Act
         var result = await _personsController.Update(invalidPersonUpdateRequestWithNullEmail , person.PersonID);

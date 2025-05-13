@@ -2,10 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using RepositoryContracts;
 using ServiceContracts;
+using ServiceContracts.Countries;
 using ServiceContracts.DTO;
-namespace Services
+namespace Services.Countries
 {
-    public class CountriesService(ICountriesRepository _countriesRepository) : ICountriesService
+    public class CountriesAdderService(ICountriesRepository _countriesRepository) :ICountriesAdderService
     {
         public async Task<CountryResponse> AddCountry(CountryAddRequest? countryAddRequest)
         {
@@ -24,22 +25,5 @@ namespace Services
 
             return (await _countriesRepository.AddCountry(countryAddRequest.ToCountry())).ToCountryResponse();
         }
-
-        public async Task<List<CountryResponse>> GetAllCountries()
-        {
-            return (await _countriesRepository.GetAllCountries()).Select(c=>c.ToCountryResponse()).ToList();
-        }
-
-        public async Task<CountryResponse?> GetCountryByCountryID(Guid? countryID)
-        {
-            if (countryID == null)
-            {
-                return null;
-            }
-
-            return (await _countriesRepository.GetCountryByCountryID(countryID))?.ToCountryResponse();
-        }
-
-
     }
 }

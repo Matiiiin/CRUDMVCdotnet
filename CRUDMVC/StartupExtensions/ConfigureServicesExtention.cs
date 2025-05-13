@@ -8,8 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Repositories;
 using RepositoryContracts;
 using ServiceContracts;
+using ServiceContracts.Countries;
 using ServiceContracts.Persons;
 using Services;
+using Services.Countries;
 using Services.Persons;
 
 namespace CRUDMVC.StartupExtensions;
@@ -30,7 +32,8 @@ public static class ConfigureServicesExtention
          options.Filters.Add<AddCustomHeaderResponseGlobalActionFilter>();
          // options.Filters.Add<AuthTokenCheckAuthorizationFilter>();
       });
-      services.AddScoped<ICountriesService, CountriesService>();
+      services.AddScoped<ICountriesAdderService,CountriesAdderService>();
+      services.AddScoped<ICountriesGetterService,CountriesGetterService>();
       
       services.AddScoped<IPersonsGetterService,PersonsGetterService>();
       services.AddScoped<IPersonsAdderService,PersonsAdderService>();

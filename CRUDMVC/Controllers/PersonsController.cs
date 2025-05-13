@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ServiceContracts;
+using ServiceContracts.Countries;
 using ServiceContracts.DTO;
 using ServiceContracts.Enums;
 using ServiceContracts.Persons;
@@ -18,15 +19,15 @@ using ServiceContracts.Persons;
 namespace CRUDMVC.Controllers;
 
 [Route("[controller]")]
-public class PersonsController(IPersonsGetterService personsGetterService , IPersonsAdderService personsAdderService, IPersonsSorterService personsSorterService, IPersonsDeleterService personsDeleterService, IPersonsUpdaterService personsUpdaterService, ICountriesService countriesService)  : Controller
+public class PersonsController(IPersonsGetterService personsGetterService , IPersonsAdderService personsAdderService, IPersonsSorterService personsSorterService, IPersonsDeleterService personsDeleterService, IPersonsUpdaterService personsUpdaterService, ICountriesAdderService countriesAdderService ,ICountriesGetterService countriesGetterService)  : Controller
 {
     private readonly IPersonsGetterService _personsGetterService = personsGetterService;
     private readonly IPersonsAdderService _personsAdderService = personsAdderService;
     private readonly IPersonsSorterService _personsSorterService = personsSorterService;
     private readonly IPersonsDeleterService _personsDeleterService = personsDeleterService;
     private readonly IPersonsUpdaterService _personsUpdaterService = personsUpdaterService;
-    private readonly ICountriesService _countriesService = countriesService;
-
+    private readonly ICountriesGetterService _countriesGetterService = countriesGetterService;
+    private readonly ICountriesAdderService _countriesAdderService = countriesAdderService;
     #region FileUpload test Action
 
     [Route("/[action]")]
@@ -69,7 +70,7 @@ public class PersonsController(IPersonsGetterService personsGetterService , IPer
     [HttpGet]
     public async Task<IActionResult> Create()
     {
-        var allCountries = await _countriesService.GetAllCountries();
+        var allCountries = await _countriesGetterService.GetAllCountries();
         ViewBag.Countries =allCountries
             .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
         return View();
@@ -83,7 +84,7 @@ public class PersonsController(IPersonsGetterService personsGetterService , IPer
     {
         if (!ModelState.IsValid)
         {
-            var allCountries = await _countriesService.GetAllCountries();
+            var allCountries = await _countriesGetterService.GetAllCountries();
             ViewBag.Countries =allCountries
                 .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
             ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
@@ -99,7 +100,7 @@ public class PersonsController(IPersonsGetterService personsGetterService , IPer
     [TypeFilter<PersonsEditActionFilter>]
     public async Task<IActionResult> Edit([FromRoute] Guid personID)
     {
-        var allCountries = await _countriesService.GetAllCountries();
+        var allCountries = await _countriesGetterService.GetAllCountries();
         ViewBag.Countries = allCountries
             .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
         return View((await _personsGetterService.GetPersonByPersonID(personID))?.ToPersonUpdateRequest());
@@ -113,7 +114,7 @@ public class PersonsController(IPersonsGetterService personsGetterService , IPer
         if (personUpdateRequest == null) return BadRequest("Please provide a valid person data");
         if (!ModelState.IsValid)
         {
-            var allCountries = await _countriesService.GetAllCountries();
+            var allCountries = await _countriesGetterService.GetAllCountries();
             ViewBag.Countries = allCountries
                 .Select(c => new SelectListItem { Text = c.CountryName, Value = c.CountryID.ToString() });
             ViewBag.Errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
